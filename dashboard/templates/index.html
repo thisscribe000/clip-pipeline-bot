@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clip Pipeline — Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: #222222;
+      --accent: #e8ff47;
+      --accent2: #ff6b35;
+      --text: #f0f0f0;
+      --muted: #555555;
+      --success: #4ade80;
+      --danger: #f87171;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(232,255,71,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(232,255,71,0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    header {
+      padding: 40px 0 32px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 48px;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 11px;
+      font-family: 'Space Mono', monospace;
+      color: var(--muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    h1 span { color: var(--accent); }
+
+    .status-dot {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--success);
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--accent);
+    }
+
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .stat-value {
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .sections {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .section:nth-child(1) { animation-delay: 0.2s; }
+    .section:nth-child(2) { animation-delay: 0.25s; }
+
+    .section-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .count-badge {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      background: var(--border);
+      color: var(--muted);
+      padding: 2px 8px;
+    }
+
+    .sub-list {
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .sub-list::-webkit-scrollbar { width: 4px; }
+    .sub-list::-webkit-scrollbar-track { background: transparent; }
+    .sub-list::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .sub-item {
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.15s;
+    }
+
+    .sub-item:hover { background: rgba(232,255,71,0.03); }
+    .sub-item:last-child { border-bottom: none; }
+
+    .sub-name { font-weight: 600; font-size: 14px; }
+
+    .sub-date {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .clips-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      margin-bottom: 48px;
+      animation: fadeUp 0.4s ease 0.3s both;
+    }
+
+    .clips-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .clips-table th {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 14px 24px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-weight: 400;
+    }
+
+    .clips-table td {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    .clips-table tr:last-child td { border-bottom: none; }
+    .clips-table tr:hover td { background: rgba(232,255,71,0.02); }
+
+    .fmt-badge {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      padding: 3px 8px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .fmt-mp3 { background: rgba(232,255,71,0.15); color: var(--accent); }
+    .fmt-mp4 { background: rgba(255,107,53,0.15); color: var(--accent2); }
+
+    .status-sent {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--success);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-pending {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-broadcast {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: all 0.15s;
+    }
+
+    .btn-broadcast:hover {
+      background: #fff;
+      transform: translateY(-1px);
+    }
+
+    .btn-broadcast:disabled {
+      background: var(--border);
+      color: var(--muted);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-broadcast.loading {
+      background: var(--muted);
+      color: #000;
+      cursor: wait;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      padding: 16px 20px;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      max-width: 320px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 100;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.error { border-left-color: var(--danger); }
+
+    .empty {
+      padding: 40px 24px;
+      text-align: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    .clip-id {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .clip-id span { color: var(--accent); font-weight: 700; }
+
+    @media (max-width: 768px) {
+      .stats { grid-template-columns: 1fr; }
+      .sections { grid-template-columns: 1fr; }
+      .stat-value { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="header-inner">
+        <div>
+          <div class="logo">Clip Pipeline</div>
+          <h1>Admin <span>Dashboard</span></h1>
+        </div>
+        <div class="status-dot">
+          <div class="dot"></div>
+          LIVE
+        </div>
+      </div>
+    </header>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">Subscribers</div>
+        <div class="stat-value" id="stat-subs">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Clips</div>
+        <div class="stat-value" id="stat-clips">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Broadcasts Sent</div>
+        <div class="stat-value" id="stat-broadcast">—</div>
+      </div>
+    </div>
+
+    <div class="sections">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Subscribers</div>
+          <div class="count-badge" id="sub-count">0</div>
+        </div>
+        <div class="sub-list" id="sub-list">
+          <div class="empty">Loading...</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Recent Activity</div>
+        </div>
+        <div class="sub-list" id="activity-log">
+          <div class="empty">No activity yet</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="clips-section">
+      <div class="section-header">
+        <div class="section-title">Clips</div>
+        <div class="count-badge" id="clip-count">0</div>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="clips-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Format</th>
+              <th>Created</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="clips-body">
+            <tr>
+              <td colspan="5">
+                <div class="empty">Loading clips...</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const activityLog = [];
+
+    function showToast(msg, isError = false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show' + (isError ? ' error' : '');
+      setTimeout(() => t.className = 'toast', 3500);
+    }
+
+    function addActivity(msg) {
+      activityLog.unshift({ msg, time: new Date().toLocaleTimeString() });
+      if (activityLog.length > 20) activityLog.pop();
+      renderActivity();
+    }
+
+    function renderActivity() {
+      const el = document.getElementById('activity-log');
+      if (!activityLog.length) {
+        el.innerHTML = '<div class="empty">No activity yet</div>';
+        return;
+      }
+      el.innerHTML = activityLog.map(a => `
+        <div class="sub-item">
+          <span class="sub-name" style="font-size:13px">${a.msg}</span>
+          <span class="sub-date">${a.time}</span>
+        </div>
+      `).join('');
+    }
+
+    async function loadStats() {
+      const res = await fetch('/api/stats');
+      const data = await res.json();
+      document.getElementById('stat-subs').textContent = data.subscribers;
+      document.getElementById('stat-clips').textContent = data.clips;
+      document.getElementById('stat-broadcast').textContent = data.broadcast;
+    }
+
+    async function loadSubscribers() {
+      const res = await fetch('/api/subscribers');
+      const data = await res.json();
+      document.getElementById('sub-count').textContent = data.length;
+
+      const el = document.getElementById('sub-list');
+      if (!data.length) {
+        el.innerHTML = '<div class="empty">No subscribers yet</div>';
+        return;
+      }
+
+      el.innerHTML = data.map(s => `
+        <div class="sub-item">
+          <span class="sub-name">@${s.username || 'unknown'}</span>
+          <span class="sub-date">${s.joined_at?.slice(0, 10) || '—'}</span>
+        </div>
+      `).join('');
+    }
+
+    async function loadClips() {
+      const res = await fetch('/api/clips');
+      const data = await res.json();
+      document.getElementById('clip-count').textContent = data.length;
+
+      const tbody = document.getElementById('clips-body');
+      if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="5"><div class="empty">No clips yet</div></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.map(c => `
+        <tr>
+          <td class="clip-id">#<span>${c.id}</span></td>
+          <td><span class="fmt-badge fmt-${c.fmt}">${c.fmt}</span></td>
+          <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted)">${c.created_at?.slice(0, 16).replace('T', ' ') || '—'}</td>
+          <td>
+            ${c.broadcast
+              ? '<span class="status-sent">● SENT</span>'
+              : '<span class="status-pending">○ PENDING</span>'
+            }
+          </td>
+          <td>
+            <button
+              class="btn-broadcast"
+              id="btn-${c.id}"
+              onclick="broadcastClip(${c.id}, this)"
+              ${c.broadcast ? 'disabled' : ''}
+            >
+              ${c.broadcast ? 'SENT' : 'BROADCAST'}
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function broadcastClip(clipId, btn) {
+      btn.textContent = 'SENDING...';
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`/api/broadcast/${clipId}`, { method: 'POST' });
+        const data = await res.json();
+
+        if (res.ok) {
+          btn.textContent = 'SENT';
+          btn.classList.remove('loading');
+          showToast(`✓ Broadcast complete — ${data.success} sent, ${data.failed} failed`);
+          addActivity(`Clip #${clipId} broadcast → ${data.success} delivered`);
+          await loadStats();
+          await loadClips();
+        } else {
+          btn.textContent = 'BROADCAST';
+          btn.classList.remove('loading');
+          btn.disabled = false;
+          showToast(data.error || 'Broadcast failed', true);
+        }
+      } catch (e) {
+        btn.textContent = 'BROADCAST';
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        showToast('Network error', true);
+      }
+    }
+
+    async function refresh() {
+      await Promise.all([loadStats(), loadSubscribers(), loadClips()]);
+    }
+
+    refresh();
+    setInterval(refresh, 30000);
+  </script>
+</body>
+</html>
