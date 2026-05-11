@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand, MenuButtonCommands
 from telegram.ext import (
     ApplicationBuilder, CommandHandler, CallbackQueryHandler,
-    ContextTypes, MessageHandler, filters, ConversationHandler
+    ContextTypes, MessageHandler, filters
 )
 
 load_dotenv()
@@ -15,13 +15,11 @@ load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = int(os.getenv("ADMIN_ID"))
 
-WAITING_FOR_CUT = 1
-WAITING_FOR_BROADCAST_ID = 2
-
 
 async def on_startup(app):
     commands = [
         BotCommand("start", "Open the main menu"),
+        BotCommand("clips", "List clips to broadcast"),
         BotCommand("subscribe", "Subscribe to receive clips"),
         BotCommand("unsubscribe", "Unsubscribe from clips"),
         BotCommand("cancel", "Cancel current action"),
@@ -87,7 +85,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 
-async def download_with_progress(url: str, raw_path: str, status_msg, context):
+async def download_with_progress(url: str, raw_path: str, status_msg):
     last_reported = -1
 
     process = subprocess.Popen(
@@ -114,9 +112,7 @@ async def download_with_progress(url: str, raw_path: str, status_msg, context):
                 filled = bucket // 10
                 bar = "█" * filled + "░" * (10 - filled)
                 try:
-                    await status_msg.edit_text(
-                        f"📥 Downloading...\n\n{bar} {bucket}%"
-                    )
+                    await status_msg.edit_text(f"📥 Downloading...\n\n{bar} {bucket}%")
                 except Exception:
                     pass
 
@@ -127,22 +123,25 @@ async def download_with_progress(url: str, raw_path: str, status_msg, context):
 
 async def handle_cut_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
-        return ConversationHandler.END
+        return
 
     text = update.message.text.strip()
     parts = text.split()
 
     if len(parts) < 4:
         await update.message.reply_text(
-            "Format: [url] [start HH:MM:SS] [end HH:MM:SS] [mp3 or mp4]\n\nTry again or /cancel"
+            "Format: [url] [start HH:MM:SS] [end HH:MM:SS] [mp3 or mp4]\n\nTry again or /cancel",
+            reply_markup=admin_menu()
         )
-        return WAITING_FOR_CUT
+        context.user_data["state"] = "cut"
+        return
 
     url, start, end, fmt = parts[0], parts[1], parts[2], parts[3]
 
     if fmt not in ("mp3", "mp4"):
         await update.message.reply_text("Format must be mp3 or mp4. Try again or /cancel")
-        return WAITING_FOR_CUT
+        context.user_data["state"] = "cut"
+        return
 
     status = await update.message.reply_text("⏳ Starting...")
 
@@ -152,7 +151,7 @@ async def handle_cut_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     output_path = f"downloads/clip_{unique_id}"
 
     try:
-        await download_with_progress(url, raw_path, status, context)
+        await download_with_progress(url, raw_path, status)
 
         await status.edit_text("✂️ Cutting clip...")
 
@@ -195,49 +194,51 @@ async def handle_cut_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         conn = sqlite3.connect("bot.db")
         cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO clips (file_id, fmt) VALUES (?, ?)",
-            (file_id, fmt)
-        )
+        cursor.execute("INSERT INTO clips (file_id, fmt) VALUES (?, ?)", (file_id, fmt))
         clip_id = cursor.lastrowid
         conn.commit()
         conn.close()
 
         await status.edit_text(
-            f"✅ Clip saved! ID: *{clip_id}*\n\nGo to menu to broadcast it.",
-            parse_mode="Markdown"
+            f"✅ Clip saved! ID: *{clip_id}*\n\nClick a clip below to broadcast it.",
+            parse_mode="Markdown",
+            reply_markup=build_broadcast_menu()
         )
 
     except Exception as e:
-        await status.edit_text(f"❌ Error:\n{str(e)}")
+        await status.edit_text(f"❌ Error:\n{str(e)}\n\nUse /start to return to menu.")
+        await update.message.reply_text("Back to menu:", reply_markup=admin_menu())
 
-    await update.message.reply_text(
-        "Back to menu:", reply_markup=admin_menu()
-    )
-    return ConversationHandler.END
+    context.user_data["state"] = None
 
 
-async def handle_broadcast_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_ID:
-        return ConversationHandler.END
+def build_broadcast_menu():
+    conn = sqlite3.connect("bot.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, fmt, broadcast FROM clips ORDER BY id DESC LIMIT 9")
+    clips = cursor.fetchall()
+    conn.close()
 
-    text = update.message.text.strip()
+    rows = []
+    for c in clips:
+        clip_id, fmt, broadcast = c[0], c[1], c[2]
+        icon = "📤" if broadcast else "📡"
+        label = f"{icon} Clip #{clip_id} ({fmt.upper()})"
+        rows.append([InlineKeyboardButton(label, callback_data=f"bc_{clip_id}")])
 
-    if not text.isdigit():
-        await update.message.reply_text("Please send a valid clip ID number. Try again or /cancel")
-        return WAITING_FOR_BROADCAST_ID
+    rows.append([InlineKeyboardButton("🔙 Back to Menu", callback_data="back_to_menu")])
+    return InlineKeyboardMarkup(rows)
 
-    clip_id = int(text)
 
+async def do_broadcast_clip(clip_id, context):
     conn = sqlite3.connect("bot.db")
     cursor = conn.cursor()
     cursor.execute("SELECT file_id, fmt FROM clips WHERE id = ?", (clip_id,))
     clip = cursor.fetchone()
 
     if not clip:
-        await update.message.reply_text("Clip not found. Try again or /cancel")
         conn.close()
-        return WAITING_FOR_BROADCAST_ID
+        return "❌ Clip not found."
 
     file_id, fmt = clip
 
@@ -246,12 +247,11 @@ async def handle_broadcast_input(update: Update, context: ContextTypes.DEFAULT_T
     conn.close()
 
     if not subscribers:
-        await update.message.reply_text("No subscribers yet.")
-        await update.message.reply_text("Back to menu:", reply_markup=admin_menu())
-        return ConversationHandler.END
+        return "❌ No subscribers yet."
 
-    status = await update.message.reply_text(
-        f"📡 Broadcasting clip {clip_id} to {len(subscribers)} subscribers..."
+    status_text = f"📡 Broadcasting clip #{clip_id} to {len(subscribers)} subscribers..."
+    status_msg = await context.bot.send_message(
+        chat_id=ADMIN_ID, text=status_text
     )
 
     success = 0
@@ -273,12 +273,9 @@ async def handle_broadcast_input(update: Update, context: ContextTypes.DEFAULT_T
     conn.commit()
     conn.close()
 
-    await status.edit_text(
-        f"✅ Broadcast complete.\n\n✔️ Sent: {success}\n❌ Failed: {failed}"
-    )
-
-    await update.message.reply_text("Back to menu:", reply_markup=admin_menu())
-    return ConversationHandler.END
+    msg = f"✅ Broadcast complete.\n\n✔️ Sent: {success}\n❌ Failed: {failed}"
+    await status_msg.edit_text(msg, reply_markup=admin_menu())
+    return msg
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -287,84 +284,153 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Cancelled.", reply_markup=admin_menu())
     else:
         await update.message.reply_text("Cancelled.", reply_markup=user_menu())
-    return ConversationHandler.END
+
+
+async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.effective_chat.id
+    username = update.effective_user.username or "unknown"
+
+    conn = sqlite3.connect("bot.db")
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT OR IGNORE INTO subscribers (chat_id, username) VALUES (?, ?)",
+        (chat_id, username)
+    )
+    conn.commit()
+    added = cursor.rowcount > 0
+    conn.close()
+
+    if added:
+        await update.message.reply_text(
+            "✅ You're subscribed! You'll receive clips when they're sent out.",
+            reply_markup=user_menu()
+        )
+    else:
+        await update.message.reply_text(
+            "You're already subscribed. ✅",
+            reply_markup=user_menu()
+        )
+
+
+async def handle_unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.effective_chat.id
+    conn = sqlite3.connect("bot.db")
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM subscribers WHERE chat_id = ?", (chat_id,))
+    conn.commit()
+    removed = cursor.rowcount > 0
+    conn.close()
+
+    if removed:
+        await update.message.reply_text(
+            "❌ You've been unsubscribed.",
+            reply_markup=user_menu()
+        )
+    else:
+        await update.message.reply_text(
+            "You weren't subscribed.",
+            reply_markup=user_menu()
+        )
+
+
+async def handle_clips(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != ADMIN_ID:
+        await update.message.reply_text("Unauthorized.")
+        return
+
+    await update.message.reply_text(
+        "📡 *Select a clip to broadcast:*",
+        parse_mode="Markdown",
+        reply_markup=build_broadcast_menu()
+    )
 
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     data = query.data
-    user_id = update.effective_user.id
 
     if data == "cut_new":
         await query.message.reply_text(
             "Send the clip details in this format:\n\n"
             "`[url] [start HH:MM:SS] [end HH:MM:SS] [mp3 or mp4]`\n\n"
             "Example:\n`https://youtube.com/watch?v=xxx 00:10:30 00:15:00 mp3`",
-            parse_mode="Markdown"
+            parse_mode="Markdown",
+            reply_markup=admin_menu()
         )
-        context.user_data["state"] = WAITING_FOR_CUT
+        context.user_data["state"] = "cut"
 
     elif data == "broadcast_menu":
-        conn = sqlite3.connect("bot.db")
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT id, fmt, created_at, broadcast FROM clips ORDER BY id DESC LIMIT 10"
+        await query.message.reply_text(
+            "📡 *Select a clip to broadcast:*",
+            parse_mode="Markdown",
+            reply_markup=build_broadcast_menu()
         )
-        clips = cursor.fetchall()
-        conn.close()
 
-        if not clips:
-            await query.message.reply_text("No clips yet.")
-            return
+    elif data == "back_to_menu":
+        if update.effective_user.id == ADMIN_ID:
+            await query.message.edit_text(
+                "👋 Back to menu:", reply_markup=admin_menu()
+            )
+        else:
+            await query.message.edit_text(
+                "👋 Back to menu:", reply_markup=user_menu()
+            )
 
-        lines = ["*Recent Clips:*\n"]
-        for c in clips:
-            status = "✅ Sent" if c[3] else "⏳ Pending"
-            lines.append(f"ID {c[0]} — {c[1].upper()} — {status} — {c[2][:10]}")
-
-        lines.append("\nSend the clip ID you want to broadcast:")
-        await query.message.reply_text("\n".join(lines), parse_mode="Markdown")
-        context.user_data["state"] = WAITING_FOR_BROADCAST_ID
+    elif data.startswith("bc_"):
+        clip_id = int(data.split("_")[1])
+        await query.message.edit_text(f"📡 Broadcasting clip #{clip_id}...")
+        await do_broadcast_clip(clip_id, context)
 
     elif data == "view_subs":
         conn = sqlite3.connect("bot.db")
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM subscribers")
         count = cursor.fetchone()[0]
-        cursor.execute("SELECT username, joined_at FROM subscribers ORDER BY joined_at DESC LIMIT 5")
+        cursor.execute("SELECT username, joined_at FROM subscribers ORDER BY joined_at DESC LIMIT 10")
         recent = cursor.fetchall()
         conn.close()
 
-        lines = [f"👥 *Total Subscribers: {count}*\n", "*Recent:*"]
-        for r in recent:
-            lines.append(f"@{r[0]} — {r[1][:10]}")
+        if count == 0:
+            await query.message.reply_text(
+                "👥 No subscribers yet.\n\nShare the bot with your audience!",
+                reply_markup=admin_menu()
+            )
+            return
 
+        lines = [f"👥 *Total Subscribers: {count}*\n"]
+        if recent:
+            lines.append("*Recent:*")
+            for r in recent:
+                lines.append(f"  @{r[0]} — {r[1][:10]}")
         await query.message.reply_text("\n".join(lines), parse_mode="Markdown")
 
     elif data == "clip_history":
         conn = sqlite3.connect("bot.db")
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT id, fmt, created_at, broadcast FROM clips ORDER BY id DESC LIMIT 10"
-        )
+        cursor.execute("SELECT id, fmt, created_at, broadcast FROM clips ORDER BY id DESC LIMIT 10")
         clips = cursor.fetchall()
         conn.close()
 
         if not clips:
-            await query.message.reply_text("No clips yet.")
+            await query.message.reply_text(
+                "📋 No clips yet.", reply_markup=admin_menu()
+            )
             return
 
         lines = ["*📋 Clip History:*\n"]
         for c in clips:
-            status = "✅ Broadcast" if c[3] else "⏳ Not sent"
-            lines.append(f"ID {c[0]} — {c[1].upper()} — {status} — {c[2][:10]}")
+            status = "✅" if c[3] else "⏳"
+            lines.append(f"{status} #{c[0]} — {c[1].upper()} — {c[2][:16]}")
 
-        await query.message.reply_text("\n".join(lines), parse_mode="Markdown")
+        lines.append("\nGo to Broadcast to send a clip:")
+        await query.message.reply_text(
+            "\n".join(lines), parse_mode="Markdown", reply_markup=admin_menu()
+        )
 
     elif data == "subscribe":
-        chat_id = update.effective_chat.id
-        username = update.effective_user.username or "unknown"
+        chat_id = query.message.chat_id
+        username = query.from_user.username or "unknown"
         conn = sqlite3.connect("bot.db")
         cursor = conn.cursor()
         cursor.execute(
@@ -376,17 +442,18 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         conn.close()
 
         if added:
-            await query.message.reply_text(
-                "✅ You're subscribed! You'll receive clips when they're sent out.",
+            await query.message.edit_text(
+                "✅ You're subscribed!\n\nYou'll receive clips when they're sent out.\n\nUse the menu below:",
                 reply_markup=user_menu()
             )
         else:
-            await query.message.reply_text(
-                "You're already subscribed.", reply_markup=user_menu()
+            await query.message.edit_text(
+                "✅ You're already subscribed!\n\nUse the menu below:",
+                reply_markup=user_menu()
             )
 
     elif data == "unsubscribe":
-        chat_id = update.effective_chat.id
+        chat_id = query.message.chat_id
         conn = sqlite3.connect("bot.db")
         cursor = conn.cursor()
         cursor.execute("DELETE FROM subscribers WHERE chat_id = ?", (chat_id,))
@@ -395,18 +462,24 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         conn.close()
 
         if removed:
-            await query.message.reply_text(
-                "❌ You've been unsubscribed.", reply_markup=user_menu()
+            await query.message.edit_text(
+                "❌ You've been unsubscribed.\n\nUse the menu below:",
+                reply_markup=user_menu()
             )
         else:
-            await query.message.reply_text(
-                "You weren't subscribed.", reply_markup=user_menu()
+            await query.message.edit_text(
+                "You weren't subscribed.\n\nUse the menu below:",
+                reply_markup=user_menu()
             )
 
     elif data == "about":
-        await query.message.reply_text(
+        await query.message.edit_text(
+            "🎬 *Clip Pipeline Bot*\n\n"
             "This bot delivers short audio and video clips directly to you.\n\n"
-            "Subscribe to get them automatically whenever new ones are released.",
+            "📌 Subscribe to receive clips automatically when they're released.\n"
+            "📌 Unsubscribe anytime if you no longer want to receive them.\n\n"
+            "Contact the admin if you have questions.",
+            parse_mode="Markdown",
             reply_markup=user_menu()
         )
 
@@ -414,17 +487,18 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def message_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
     state = context.user_data.get("state")
 
-    if state == WAITING_FOR_CUT:
+    if state == "cut":
         context.user_data["state"] = None
         await handle_cut_input(update, context)
-    elif state == WAITING_FOR_BROADCAST_ID:
-        context.user_data["state"] = None
-        await handle_broadcast_input(update, context)
     else:
         if update.effective_user.id == ADMIN_ID:
-            await update.message.reply_text("Use the menu:", reply_markup=admin_menu())
+            await update.message.reply_text(
+                "Use the menu below:", reply_markup=admin_menu()
+            )
         else:
-            await update.message.reply_text("Use the menu:", reply_markup=user_menu())
+            await update.message.reply_text(
+                "Use the menu below:", reply_markup=user_menu()
+            )
 
 
 if __name__ == "__main__":
@@ -438,6 +512,9 @@ if __name__ == "__main__":
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("cancel", cancel))
+    app.add_handler(CommandHandler("subscribe", handle_subscribe))
+    app.add_handler(CommandHandler("unsubscribe", handle_unsubscribe))
+    app.add_handler(CommandHandler("clips", handle_clips))
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_router))
 

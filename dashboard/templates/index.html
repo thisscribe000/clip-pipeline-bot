@@ -374,8 +374,16 @@
           <div class="dot"></div>
           LIVE
         </div>
+        <div id="connection-status" style="font-family:'Space Mono',monospace;font-size:11px;color:#f87171;display:none;">
+          ● CONNECTION LOST
+        </div>
       </div>
     </header>
+
+    <!-- Error banner -->
+    <div id="error-banner" style="background:#f87171;color:#000;padding:12px 20px;font-family:'Space Mono',monospace;font-size:12px;margin-bottom:24px;display:none;">
+      ⚠️ Connection lost — retrying...
+    </div>
 
     <div class="stats">
       <div class="stat-card">
@@ -474,11 +482,19 @@
     }
 
     async function loadStats() {
-      const res = await fetch('/api/stats');
-      const data = await res.json();
-      document.getElementById('stat-subs').textContent = data.subscribers;
-      document.getElementById('stat-clips').textContent = data.clips;
-      document.getElementById('stat-broadcast').textContent = data.broadcast;
+      try {
+        const res = await fetch('/api/stats');
+        if (!res.ok) throw new Error('failed');
+        const data = await res.json();
+        document.getElementById('stat-subs').textContent = data.subscribers;
+        document.getElementById('stat-clips').textContent = data.clips;
+        document.getElementById('stat-broadcast').textContent = data.broadcast;
+        document.getElementById('connection-status').style.display = 'none';
+        document.getElementById('error-banner').style.display = 'none';
+      } catch {
+        document.getElementById('connection-status').style.display = 'flex';
+        document.getElementById('error-banner').style.display = 'block';
+      }
     }
 
     async function loadSubscribers() {
