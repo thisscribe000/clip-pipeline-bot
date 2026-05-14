@@ -23,52 +23,30 @@ bot.py (Telegram bot)  ← shares →  bot.db (SQLite)
 
 Both bot.py and dashboard/app.py read/write the same `bot.db` file. The bot runs on port 5001 (polling), dashboard on port 5000 (HTTP).
 
-## Commands (registered with Telegram via set_my_commands)
+## Commands
 
 | Command | Who | Description |
 |---|---|---|
-| `/start` | anyone | Bot alive — shows admin or user menu |
-| `/clips` | admin | Lists all clips with clickable broadcast buttons |
+| `/start` | anyone | Shows admin or user menu |
+| `/clips` | anyone | Admins: broadcast clips. Users: browse/request clips |
 | `/subscribe` | anyone | Subscribe to receive clips |
 | `/unsubscribe` | anyone | Unsubscribe from clips |
+| `/stats` | admin | View analytics (subscribers, clips, broadcasts) |
 | `/cancel` | anyone | Cancel current action |
 
-## Bot Flow
+## User Flows
 
-### Cutting a clip (admin)
-```
-Admin: /start → menu
-Admin: "✂️ Cut New Clip" button
-Admin: sends "[url] [start HH:MM:SS] [end HH:MM:SS] [mp3 or mp4]"
-  ├─ yt-dlp downloads full video (progress bar: ████░░░░░░ 40%)
-  ├─ ffmpeg cuts clip
-  ├─ upload to Telegram → get file_id
-  ├─ save file_id + fmt to clips table
-  └─ show clip with "Broadcast" buttons
-```
+### Admin
+- `✂️ Cut New Clip` — Download video, cut clip, save to Telegram
+- `📡 Broadcast Clip` — Send clip to all subscribers
+- `👥 Subscribers` — View subscriber list
+- `📊 Analytics` — Stats dashboard
+- `📋 Clip History` — View all clips with status
 
-### Broadcasting (admin)
-```
-Admin: "📡 Broadcast Clip" button → shows clips as inline buttons
-Admin: clicks "📡 Clip #3 (MP4)" button
-  ├─ bot fetches file_id + subscribers from DB
-  ├─ loops through all subscribers
-  ├─ sends clip via Telegram API (no re-upload)
-  └─ marks clip as broadcast=1
-```
-
-Or via dashboard at http://localhost:5000 (or sharestill.paperlinkos.site):
-- View stats, subscribers, clips table
-- Click BROADCAST button per clip
-- Auto-refreshes every 30s
-
-### Subscribing (users)
-```
-User: /start → user menu
-User: clicks "✅ Subscribe" button or sends /subscribe
-  → added to subscribers table
-User: /unsubscribe or clicks button → removed
-```
+### User
+- `🎬 Browse Clips` — View available clips, tap to get sent
+- `✅ Subscribe` — Get added to broadcast list
+- `ℹ️ About` — Bot info
 
 ## Database Schema
 
@@ -76,12 +54,14 @@ User: /unsubscribe or clicks button → removed
 
 **clips**: id (PK), file_id, title, fmt, created_at, broadcast (0/1)
 
+**broadcasts**: id (PK), clip_id (FK), success, failed, sent_at
+
 ## File Structure
 
 ```
 clip-pipeline-bot/
-├── bot.py              # Telegram bot (port 5001 polling)
-├── bot.db              # SQLite DB (gitignored — lives on VPS)
+├── bot.py              # Telegram bot (polling)
+├── bot.db              # SQLite DB (gitignored)
 ├── .env                # BOT_TOKEN, ADMIN_ID (gitignored)
 │                       # PORT=5000 (for dashboard)
 ├── .gitignore
@@ -110,21 +90,15 @@ python app.py
 # runs on 0.0.0.0:5000
 ```
 
-### Or use systemd (production)
-Create `/etc/systemd/system/clip-bot.service` for auto-restart on crash.
-
 ## Progress
 
-- [x] Bot skeleton with /start, /subscribe, /unsubscribe
-- [x] /cut command — yt-dlp + ffmpeg pipeline
-- [x] Live progress bar during download (█░░░░░░░░░ 40%)
-- [x] SQLite subscriber system
-- [x] /broadcast command (now clickable inline buttons)
-- [x] Bot commands registered via set_my_commands
-- [x] Menu button set via set_chat_menu_button
-- [x] Flask dashboard with dark theme
-- [x] /clips command — list clips with clickable broadcast
-- [x] Broadcast clips via inline buttons (no typing IDs)
+- [x] Admin/user menu separation
+- [x] /stats command with analytics
+- [x] /clips for both admin (broadcast) and users (browse/request)
+- [x] Users can request clips to be sent to their chat
+- [x] Broadcast tracking per session (success/failed)
+- [x] Dashboard with subscriber management (remove subscribers)
+- [x] Dashboard with success rate analytics
+- [x] Clip title support
 - [ ] Cleanup temp files after broadcast
-- [ ] /stats command — subscriber count, broadcast stats
 - [ ] systemd service files for VPS auto-start

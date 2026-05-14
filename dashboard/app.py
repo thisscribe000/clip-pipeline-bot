@@ -32,24 +32,60 @@ def index():
 def stats():
     conn = get_db()
     cursor = conn.cursor()
+
     cursor.execute("SELECT COUNT(*) as total FROM subscribers")
     total_subs = cursor.fetchone()["total"]
+
+    cursor.execute("SELECT COUNT(*) FROM subscribers WHERE joined_at >= datetime('now', '-7 days')")
+    new_this_week = cursor.fetchone()[0]
+
     cursor.execute("SELECT COUNT(*) as total FROM clips")
     total_clips = cursor.fetchone()["total"]
-    cursor.execute("SELECT SUM(success) as total FROM broadcasts")
-    total_broadcast = cursor.fetchone()["total"] or 0
+
+    cursor.execute("SELECT COUNT(*) as total FROM clips WHERE broadcast = 1")
+    clips_broadcast = cursor.fetchone()["total"]
+
+    cursor.execute("SELECT COALESCE(SUM(success), 0) FROM broadcasts")
+    total_sent = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COALESCE(SUM(failed), 0) FROM broadcasts")
+    total_failed = cursor.fetchone()[0]
+
     conn.close()
-    return jsonify({"subscribers": total_subs, "clips": total_clips, "broadcast": total_broadcast})
+
+    return jsonify({
+        "subscribers": total_subs,
+        "new_this_week": new_this_week,
+        "clips": total_clips,
+        "clips_broadcast": clips_broadcast,
+        "broadcast_sent": total_sent,
+        "broadcast_failed": total_failed,
+    })
 
 
 @app.route("/api/subscribers")
 def subscribers():
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT chat_id, username, joined_at FROM subscribers ORDER BY joined_at DESC")
+    cursor.execute("""
+        SELECT chat_id, username, joined_at
+        FROM subscribers
+        ORDER BY joined_at DESC
+    """)
     rows = [dict(r) for r in cursor.fetchall()]
     conn.close()
     return jsonify(rows)
+
+
+@app.route("/api/subscribers/<int:chat_id>", methods=["DELETE"])
+def remove_subscriber(chat_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM subscribers WHERE chat_id = ?", (chat_id,))
+    conn.commit()
+    removed = cursor.rowcount > 0
+    conn.close()
+    return jsonify({"removed": removed})
 
 
 @app.route("/api/clips")
@@ -66,7 +102,7 @@ def clips():
 def broadcast(clip_id):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT file_id, fmt FROM clips WHERE id = ?", (clip_id,))
+    cursor.execute("SELECT file_id, fmt, title FROM clips WHERE id = ?", (clip_id,))
     clip = cursor.fetchone()
 
     if not clip:
@@ -75,6 +111,7 @@ def broadcast(clip_id):
 
     file_id = clip["file_id"]
     fmt = clip["fmt"]
+    title = clip["title"]
 
     cursor.execute("SELECT chat_id FROM subscribers")
     subscribers = [r["chat_id"] for r in cursor.fetchall()]
@@ -90,9 +127,9 @@ def broadcast(clip_id):
         for chat_id in subscribers:
             try:
                 if fmt == "mp3":
-                    await bot.send_audio(chat_id=chat_id, audio=file_id)
+                    await bot.send_audio(chat_id=chat_id, audio=file_id, title=title)
                 else:
-                    await bot.send_video(chat_id=chat_id, video=file_id)
+                    await bot.send_video(chat_id=chat_id, video=file_id, title=title)
                 success += 1
             except Exception:
                 failed += 1
@@ -107,7 +144,7 @@ def broadcast(clip_id):
     conn.commit()
     conn.close()
 
-    return jsonify({"success": success, "failed": failed})
+    return jsonify({"success": success, "failed": failed, "total": len(subscribers)})
 
 
 if __name__ == "__main__":

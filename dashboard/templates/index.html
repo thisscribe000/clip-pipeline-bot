@@ -102,7 +102,7 @@
 
     .stats {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 16px;
       margin-bottom: 48px;
     }
@@ -110,7 +110,7 @@
     .stat-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      padding: 28px;
+      padding: 24px;
       position: relative;
       overflow: hidden;
       animation: fadeUp 0.4s ease both;
@@ -119,6 +119,7 @@
     .stat-card:nth-child(1) { animation-delay: 0.05s; }
     .stat-card:nth-child(2) { animation-delay: 0.1s; }
     .stat-card:nth-child(3) { animation-delay: 0.15s; }
+    .stat-card:nth-child(4) { animation-delay: 0.2s; }
 
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(16px); }
@@ -130,8 +131,12 @@
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 2px;
-      background: var(--accent);
     }
+
+    .stat-card:nth-child(1)::before { background: var(--accent); }
+    .stat-card:nth-child(2)::before { background: var(--accent2); }
+    .stat-card:nth-child(3)::before { background: var(--success); }
+    .stat-card:nth-child(4)::before { background: #a78bfa; }
 
     .stat-label {
       font-family: 'Space Mono', monospace;
@@ -139,15 +144,24 @@
       letter-spacing: 0.2em;
       text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     .stat-value {
-      font-size: 48px;
+      font-size: 36px;
       font-weight: 800;
       line-height: 1;
       letter-spacing: -0.04em;
     }
+
+    .stat-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .stat-sub span { color: var(--success); }
 
     .sections {
       display: grid;
@@ -199,7 +213,7 @@
     .sub-list::-webkit-scrollbar-thumb { background: var(--border); }
 
     .sub-item {
-      padding: 14px 24px;
+      padding: 12px 24px;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
@@ -210,12 +224,29 @@
     .sub-item:hover { background: rgba(232,255,71,0.03); }
     .sub-item:last-child { border-bottom: none; }
 
-    .sub-name { font-weight: 600; font-size: 14px; }
+    .sub-name { font-weight: 600; font-size: 13px; }
 
     .sub-date {
       font-family: 'Space Mono', monospace;
       font-size: 10px;
       color: var(--muted);
+    }
+
+    .btn-remove {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      padding: 4px 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-remove:hover {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: #000;
     }
 
     .clips-section {
@@ -355,10 +386,12 @@
 
     .clip-id span { color: var(--accent); font-weight: 700; }
 
+    .clip-title { font-weight: 600; }
+
     @media (max-width: 768px) {
-      .stats { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
       .sections { grid-template-columns: 1fr; }
-      .stat-value { font-size: 36px; }
+      .stat-value { font-size: 28px; }
     }
   </style>
 </head>
@@ -374,29 +407,29 @@
           <div class="dot"></div>
           LIVE
         </div>
-        <div id="connection-status" style="font-family:'Space Mono',monospace;font-size:11px;color:#f87171;display:none;">
-          ● CONNECTION LOST
-        </div>
       </div>
     </header>
 
-    <!-- Error banner -->
-    <div id="error-banner" style="background:#f87171;color:#000;padding:12px 20px;font-family:'Space Mono',monospace;font-size:12px;margin-bottom:24px;display:none;">
-      ⚠️ Connection lost — retrying...
-    </div>
-
     <div class="stats">
       <div class="stat-card">
-        <div class="stat-label">Subscribers</div>
+        <div class="stat-label">Total Subscribers</div>
         <div class="stat-value" id="stat-subs">—</div>
+        <div class="stat-sub">+<span id="stat-new-week">0</span> this week</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Total Clips</div>
         <div class="stat-value" id="stat-clips">—</div>
+        <div class="stat-sub"><span id="stat-clips-sent">0</span> broadcast</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Broadcasts Sent</div>
-        <div class="stat-value" id="stat-broadcast">—</div>
+        <div class="stat-value" id="stat-sent">—</div>
+        <div class="stat-sub"><span id="stat-failed">0</span> failed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Success Rate</div>
+        <div class="stat-value" id="stat-rate">—</div>
+        <div class="stat-sub">delivery rate</div>
       </div>
     </div>
 
@@ -485,73 +518,104 @@
     async function loadStats() {
       try {
         const res = await fetch('/api/stats');
-        if (!res.ok) throw new Error('failed');
         const data = await res.json();
+
         document.getElementById('stat-subs').textContent = data.subscribers;
+        document.getElementById('stat-new-week').textContent = data.new_this_week || 0;
         document.getElementById('stat-clips').textContent = data.clips;
-        document.getElementById('stat-broadcast').textContent = data.broadcast;
-        document.getElementById('connection-status').style.display = 'none';
-        document.getElementById('error-banner').style.display = 'none';
-      } catch {
-        document.getElementById('connection-status').style.display = 'flex';
-        document.getElementById('error-banner').style.display = 'block';
+        document.getElementById('stat-clips-sent').textContent = data.clips_broadcast;
+        document.getElementById('stat-sent').textContent = data.broadcast_sent;
+        document.getElementById('stat-failed').textContent = data.broadcast_failed;
+
+        const total = data.broadcast_sent + data.broadcast_failed;
+        const rate = total > 0 ? Math.round((data.broadcast_sent / total) * 100) : 0;
+        document.getElementById('stat-rate').textContent = rate + '%';
+      } catch (e) {
+        console.error('Failed to load stats:', e);
       }
     }
 
     async function loadSubscribers() {
-      const res = await fetch('/api/subscribers');
-      const data = await res.json();
-      document.getElementById('sub-count').textContent = data.length;
+      try {
+        const res = await fetch('/api/subscribers');
+        const data = await res.json();
+        document.getElementById('sub-count').textContent = data.length;
 
-      const el = document.getElementById('sub-list');
-      if (!data.length) {
-        el.innerHTML = '<div class="empty">No subscribers yet</div>';
-        return;
+        const el = document.getElementById('sub-list');
+        if (!data.length) {
+          el.innerHTML = '<div class="empty">No subscribers yet</div>';
+          return;
+        }
+
+        el.innerHTML = data.map(s => `
+          <div class="sub-item">
+            <div>
+              <span class="sub-name">${s.username ? '@' + s.username : s.chat_id}</span>
+              <div class="sub-date">${s.joined_at?.slice(0, 10) || '—'}</div>
+            </div>
+            <button class="btn-remove" onclick="removeSubscriber(${s.chat_id})">✕</button>
+          </div>
+        `).join('');
+      } catch (e) {
+        console.error('Failed to load subscribers:', e);
       }
+    }
 
-      el.innerHTML = data.map(s => `
-        <div class="sub-item">
-          <span class="sub-name">${s.username ? '@' + s.username : s.chat_id}</span>
-          <span class="sub-date">${s.joined_at?.slice(0, 10) || '—'}</span>
-        </div>
-      `).join('');
+    async function removeSubscriber(chatId) {
+      if (!confirm('Remove this subscriber?')) return;
+      try {
+        const res = await fetch(`/api/subscribers/${chatId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.removed) {
+          showToast('Subscriber removed');
+          addActivity('Subscriber removed');
+          await loadSubscribers();
+          await loadStats();
+        }
+      } catch (e) {
+        showToast('Failed to remove subscriber', true);
+      }
     }
 
     async function loadClips() {
-      const res = await fetch('/api/clips');
-      const data = await res.json();
-      document.getElementById('clip-count').textContent = data.length;
+      try {
+        const res = await fetch('/api/clips');
+        const data = await res.json();
+        document.getElementById('clip-count').textContent = data.length;
 
-      const tbody = document.getElementById('clips-body');
-      if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="6"><div class="empty">No clips yet</div></td></tr>';
-        return;
+        const tbody = document.getElementById('clips-body');
+        if (!data.length) {
+          tbody.innerHTML = '<tr><td colspan="6"><div class="empty">No clips yet</div></td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.map(c => `
+          <tr>
+            <td class="clip-id">#<span>${c.id}</span></td>
+            <td class="clip-title">${c.title || 'Untitled'}</td>
+            <td><span class="fmt-badge fmt-${c.fmt}">${c.fmt}</span></td>
+            <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted)">${c.created_at?.slice(0, 16).replace('T', ' ') || '—'}</td>
+            <td>
+              ${c.broadcast
+                ? '<span class="status-sent">● SENT</span>'
+                : '<span class="status-pending">○ PENDING</span>'
+              }
+            </td>
+            <td>
+              <button
+                class="btn-broadcast"
+                id="btn-${c.id}"
+                onclick="broadcastClip(${c.id}, this)"
+                ${c.broadcast ? 'disabled' : ''}
+              >
+                ${c.broadcast ? 'SENT' : 'BROADCAST'}
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error('Failed to load clips:', e);
       }
-
-tbody.innerHTML = data.map(c => `
-        <tr>
-          <td class="clip-id">#<span>${c.id}</span></td>
-          <td style="font-size:13px;font-weight:600">${c.title || 'Untitled'}</td>
-          <td><span class="fmt-badge fmt-${c.fmt}">${c.fmt}</span></td>
-          <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted)">${c.created_at?.slice(0, 16).replace('T', ' ') || '—'}</td>
-          <td>
-            ${c.broadcast
-              ? '<span class="status-sent">● SENT</span>'
-              : '<span class="status-pending">○ PENDING</span>'
-            }
-          </td>
-          <td>
-            <button
-              class="btn-broadcast"
-              id="btn-${c.id}"
-              onclick="broadcastClip(${c.id}, this)"
-              ${c.broadcast ? 'disabled' : ''}
-            >
-              ${c.broadcast ? 'SENT' : 'BROADCAST'}
-            </button>
-          </td>
-        </tr>
-      `).join('');
     }
 
     async function broadcastClip(clipId, btn) {
@@ -567,7 +631,7 @@ tbody.innerHTML = data.map(c => `
           btn.textContent = 'SENT';
           btn.classList.remove('loading');
           showToast(`✓ Broadcast complete — ${data.success} sent, ${data.failed} failed`);
-          addActivity(`Clip #${clipId} broadcast → ${data.success} delivered`);
+          addActivity(`Clip #${clipId} → ${data.success} delivered`);
           await loadStats();
           await loadClips();
         } else {
