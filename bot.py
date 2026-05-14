@@ -617,7 +617,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
 
     elif data == "subscribe":
-        chat_id = query.message.chat_id
+        chat_id = query.from_user.id
         username = query.from_user.username or "unknown"
         conn = sqlite3.connect("bot.db")
         cursor = conn.cursor()
@@ -643,7 +643,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
 
     elif data == "unsubscribe":
-        chat_id = query.message.chat_id
+        chat_id = query.from_user.id
         conn = sqlite3.connect("bot.db")
         cursor = conn.cursor()
         cursor.execute("DELETE FROM subscribers WHERE chat_id = ?", (chat_id,))
