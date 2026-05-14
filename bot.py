@@ -17,15 +17,20 @@ ADMIN_ID = int(os.getenv("ADMIN_ID"))
 
 
 async def on_startup(app):
-    commands = [
+    admin_commands = [
+        BotCommand("start", "Open the main menu"),
+        BotCommand("clips", "Broadcast clips"),
+        BotCommand("stats", "View analytics"),
+        BotCommand("cancel", "Cancel current action"),
+    ]
+    user_commands = [
         BotCommand("start", "Open the main menu"),
         BotCommand("clips", "Browse available clips"),
         BotCommand("subscribe", "Subscribe to receive clips"),
         BotCommand("unsubscribe", "Unsubscribe from clips"),
-        BotCommand("stats", "View analytics (admin)"),
         BotCommand("cancel", "Cancel current action"),
     ]
-    await app.bot.set_my_commands(commands)
+    await app.bot.set_my_commands(admin_commands)
     await app.bot.set_chat_menu_button(menu_button=MenuButtonCommands())
     print("Commands and menu button registered.")
 
