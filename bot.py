@@ -73,6 +73,7 @@ def admin_menu():
         [InlineKeyboardButton("✂️ Cut New Clip", callback_data="cut_new")],
         [InlineKeyboardButton("📡 Broadcast Clip", callback_data="broadcast_menu")],
         [InlineKeyboardButton("👥 Subscribers", callback_data="view_subs")],
+        [InlineKeyboardButton("📬 Send Message", callback_data="send_message")],
         [InlineKeyboardButton("📊 Analytics", callback_data="analytics")],
         [InlineKeyboardButton("📋 Clip History", callback_data="clip_history")],
     ]
@@ -541,6 +542,16 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 lines.append(f"  @{r[0]} — {r[1][:10]}")
         await query.message.reply_text("\n".join(lines), parse_mode="Markdown")
 
+    elif data == "send_message":
+        await query.message.reply_text(
+            "📝 *Send a Message to All Subscribers*\n\n"
+            "Type your message below and it will be sent to all subscribers.\n\n"
+            "Use /cancel to go back.",
+            parse_mode="Markdown",
+            reply_markup=admin_menu()
+        )
+        context.user_data["state"] = "broadcast_msg"
+
     elif data == "analytics":
         conn = sqlite3.connect("bot.db")
         cursor = conn.cursor()
@@ -679,6 +690,44 @@ async def message_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if state == "cut":
         context.user_data["state"] = None
         await handle_cut_input(update, context)
+    elif state == "broadcast_msg":
+        if update.effective_user.id != ADMIN_ID:
+            return
+        context.user_data["state"] = None
+        message_text = update.message.text
+
+        conn = sqlite3.connect("bot.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT chat_id FROM subscribers")
+        subscribers = cursor.fetchall()
+        conn.close()
+
+        if not subscribers:
+            await update.message.reply_text(
+                "❌ *No subscribers yet.*",
+                parse_mode="Markdown",
+                reply_markup=admin_menu()
+            )
+            return
+
+        status_msg = await update.message.reply_text(
+            f"📤 Sending to {len(subscribers)} subscribers..."
+        )
+
+        success = 0
+        failed = 0
+        for (chat_id,) in subscribers:
+            try:
+                await context.bot.send_message(chat_id=chat_id, text=message_text, parse_mode="Markdown")
+                success += 1
+            except Exception:
+                failed += 1
+
+        await status_msg.edit_text(
+            f"✅ *Message sent!*\n\n✔️ Delivered: {success}\n❌ Failed: {failed}",
+            parse_mode="Markdown",
+            reply_markup=admin_menu()
+        )
     else:
         if update.effective_user.id == ADMIN_ID:
             await update.message.reply_text(
