@@ -431,6 +431,7 @@
           <thead>
             <tr>
               <th>ID</th>
+              <th>Title</th>
               <th>Format</th>
               <th>Created</th>
               <th>Status</th>
@@ -439,7 +440,7 @@
           </thead>
           <tbody id="clips-body">
             <tr>
-              <td colspan="5">
+              <td colspan="6">
                 <div class="empty">Loading clips...</div>
               </td>
             </tr>
@@ -510,7 +511,7 @@
 
       el.innerHTML = data.map(s => `
         <div class="sub-item">
-          <span class="sub-name">@${s.username || 'unknown'}</span>
+          <span class="sub-name">${s.username ? '@' + s.username : s.chat_id}</span>
           <span class="sub-date">${s.joined_at?.slice(0, 10) || '—'}</span>
         </div>
       `).join('');
@@ -523,13 +524,14 @@
 
       const tbody = document.getElementById('clips-body');
       if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="5"><div class="empty">No clips yet</div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6"><div class="empty">No clips yet</div></td></tr>';
         return;
       }
 
-      tbody.innerHTML = data.map(c => `
+tbody.innerHTML = data.map(c => `
         <tr>
           <td class="clip-id">#<span>${c.id}</span></td>
+          <td style="font-size:13px;font-weight:600">${c.title || 'Untitled'}</td>
           <td><span class="fmt-badge fmt-${c.fmt}">${c.fmt}</span></td>
           <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted)">${c.created_at?.slice(0, 16).replace('T', ' ') || '—'}</td>
           <td>

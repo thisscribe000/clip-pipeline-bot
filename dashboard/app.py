@@ -36,8 +36,8 @@ def stats():
     total_subs = cursor.fetchone()["total"]
     cursor.execute("SELECT COUNT(*) as total FROM clips")
     total_clips = cursor.fetchone()["total"]
-    cursor.execute("SELECT COUNT(*) as total FROM clips WHERE broadcast = 1")
-    total_broadcast = cursor.fetchone()["total"]
+    cursor.execute("SELECT SUM(success) as total FROM broadcasts")
+    total_broadcast = cursor.fetchone()["total"] or 0
     conn.close()
     return jsonify({"subscribers": total_subs, "clips": total_clips, "broadcast": total_broadcast})
 
@@ -56,7 +56,7 @@ def subscribers():
 def clips():
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, file_id, fmt, created_at, broadcast FROM clips ORDER BY id DESC")
+    cursor.execute("SELECT id, file_id, title, fmt, created_at, broadcast FROM clips ORDER BY id DESC")
     rows = [dict(r) for r in cursor.fetchall()]
     conn.close()
     return jsonify(rows)
@@ -103,6 +103,7 @@ def broadcast(clip_id):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("UPDATE clips SET broadcast = 1 WHERE id = ?", (clip_id,))
+    cursor.execute("INSERT INTO broadcasts (clip_id, success, failed) VALUES (?, ?, ?)", (clip_id, success, failed))
     conn.commit()
     conn.close()
 

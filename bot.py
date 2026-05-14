@@ -49,6 +49,15 @@ def init_db():
             broadcast INTEGER DEFAULT 0
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS broadcasts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            clip_id INTEGER,
+            success INTEGER DEFAULT 0,
+            failed INTEGER DEFAULT 0,
+            sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
     conn.commit()
     conn.close()
 
@@ -270,6 +279,12 @@ async def do_broadcast_clip(clip_id, context):
     conn = sqlite3.connect("bot.db")
     cursor = conn.cursor()
     cursor.execute("UPDATE clips SET broadcast = 1 WHERE id = ?", (clip_id,))
+    conn.commit()
+    conn.close()
+
+    conn = sqlite3.connect("bot.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO broadcasts (clip_id, success, failed) VALUES (?, ?, ?)", (clip_id, success, failed))
     conn.commit()
     conn.close()
 
