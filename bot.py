@@ -4,7 +4,7 @@ import uuid
 import sqlite3
 import subprocess
 from dotenv import load_dotenv
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand, MenuButtonCommands
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand
 from telegram.ext import (
     ApplicationBuilder, CommandHandler, CallbackQueryHandler,
     ContextTypes, MessageHandler, filters
@@ -17,22 +17,14 @@ ADMIN_ID = int(os.getenv("ADMIN_ID"))
 
 
 async def on_startup(app):
-    admin_commands = [
+    await app.bot.set_my_commands([
         BotCommand("start", "Open the main menu"),
-        BotCommand("clips", "Broadcast clips"),
-        BotCommand("stats", "View analytics"),
-        BotCommand("cancel", "Cancel current action"),
-    ]
-    user_commands = [
-        BotCommand("start", "Open the main menu"),
-        BotCommand("clips", "Browse available clips"),
+        BotCommand("clips", "Browse or broadcast clips"),
         BotCommand("subscribe", "Subscribe to receive clips"),
         BotCommand("unsubscribe", "Unsubscribe from clips"),
         BotCommand("cancel", "Cancel current action"),
-    ]
-    await app.bot.set_my_commands(admin_commands)
-    await app.bot.set_chat_menu_button(menu_button=MenuButtonCommands())
-    print("Commands and menu button registered.")
+    ])
+    print("Commands registered.")
 
 
 def init_db():
