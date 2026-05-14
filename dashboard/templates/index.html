@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Clip Pipeline — Admin</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -61,12 +62,40 @@
     }
 
     .logo {
-      font-size: 11px;
-      font-family: 'Space Mono', monospace;
-      color: var(--muted);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
+      width: 50px;
+      height: 50px;
       margin-bottom: 8px;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-logout {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+
+    .btn-logout:hover {
+      border-color: var(--danger);
+      color: var(--danger);
     }
 
     h1 {
@@ -399,13 +428,19 @@
   <div class="wrap">
     <header>
       <div class="header-inner">
-        <div>
-          <div class="logo">Clip Pipeline</div>
-          <h1>Admin <span>Dashboard</span></h1>
+        <div class="logo-area">
+          <img src="/static/logo.svg" alt="Share Still" class="logo" />
+          <div>
+            <div class="logo" style="margin-bottom:0">Clip Pipeline</div>
+            <h1>Admin <span>Dashboard</span></h1>
+          </div>
         </div>
-        <div class="status-dot">
-          <div class="dot"></div>
-          LIVE
+        <div class="header-right">
+          <div class="status-dot">
+            <div class="dot"></div>
+            LIVE
+          </div>
+          <a href="/logout" class="btn-logout">Logout</a>
         </div>
       </div>
     </header>
@@ -655,5 +690,9 @@
     refresh();
     setInterval(refresh, 30000);
   </script>
+
+  <footer style="padding:24px;text-align:center;font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:48px;">
+    Powered by <a href="https://paperlinkos.site" target="_blank" style="color:var(--accent);text-decoration:none;">Paperlinkos</a> — Hosted on VPS
+  </footer>
 </body>
 </html>

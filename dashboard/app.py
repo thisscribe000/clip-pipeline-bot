@@ -1,17 +1,18 @@
 import os
 import sqlite3
 import asyncio
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request, redirect, session, url_for
 from dotenv import load_dotenv
 from telegram import Bot
 
 load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY", os.urandom(24))
 app.config["ENV"] = "production"
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-BOT_ADMIN_ID = int(os.getenv("ADMIN_ID"))
+ADMIN_ID = int(os.getenv("ADMIN_ID"))
 PORT = int(os.getenv("PORT", 5000))
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "..", "bot.db")
@@ -25,7 +26,33 @@ def get_db():
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    if "admin_id" in session:
+        if session["admin_id"] == str(ADMIN_ID):
+            return render_template("index.html")
+        else:
+            return render_template("forbidden.html")
+    return render_template("login.html")
+
+
+@app.route("/subscribe")
+def subscribe():
+    return render_template("subscribe.html")
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    admin_id = request.form.get("admin_id", "").strip()
+    if admin_id == str(ADMIN_ID):
+        session["admin_id"] = admin_id
+        return redirect(url_for("index"))
+    else:
+        return render_template("login.html", error="Invalid Admin ID. Access denied.")
+
+
+@app.route("/logout")
+def logout():
+    session.pop("admin_id", None)
+    return redirect(url_for("index"))
 
 
 @app.route("/api/stats")
@@ -65,13 +92,12 @@ def stats():
 
 @app.route("/api/subscribers")
 def subscribers():
+    if "admin_id" not in session or session["admin_id"] != str(ADMIN_ID):
+        return jsonify({"error": "Unauthorized"}), 401
+
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("""
-        SELECT chat_id, username, joined_at
-        FROM subscribers
-        ORDER BY joined_at DESC
-    """)
+    cursor.execute("SELECT chat_id, username, joined_at FROM subscribers ORDER BY joined_at DESC")
     rows = [dict(r) for r in cursor.fetchall()]
     conn.close()
     return jsonify(rows)
@@ -79,6 +105,9 @@ def subscribers():
 
 @app.route("/api/subscribers/<int:chat_id>", methods=["DELETE"])
 def remove_subscriber(chat_id):
+    if "admin_id" not in session or session["admin_id"] != str(ADMIN_ID):
+        return jsonify({"error": "Unauthorized"}), 401
+
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM subscribers WHERE chat_id = ?", (chat_id,))
@@ -90,6 +119,9 @@ def remove_subscriber(chat_id):
 
 @app.route("/api/clips")
 def clips():
+    if "admin_id" not in session or session["admin_id"] != str(ADMIN_ID):
+        return jsonify({"error": "Unauthorized"}), 401
+
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id, file_id, title, fmt, created_at, broadcast FROM clips ORDER BY id DESC")
@@ -100,6 +132,9 @@ def clips():
 
 @app.route("/api/broadcast/<int:clip_id>", methods=["POST"])
 def broadcast(clip_id):
+    if "admin_id" not in session or session["admin_id"] != str(ADMIN_ID):
+        return jsonify({"error": "Unauthorized"}), 401
+
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT file_id, fmt, title FROM clips WHERE id = ?", (clip_id,))
