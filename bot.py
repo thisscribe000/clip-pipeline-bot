@@ -580,7 +580,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 📤 *Delivery:* {total_sent} ✓ | {total_failed} ✗"""
 
-        await query.message.reply_text(msg, parse_mode="Markdown", reply_markup=admin_menu())
+        await query.message.edit_text(msg, parse_mode="Markdown", reply_markup=admin_menu())
 
     elif data == "clip_history":
         conn = sqlite3.connect("bot.db")
@@ -590,7 +590,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         conn.close()
 
         if not clips:
-            await query.message.reply_text(
+            await query.message.edit_text(
                 "📋 *No clips yet.*",
                 parse_mode="Markdown",
                 reply_markup=admin_menu()
@@ -602,7 +602,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             status = "✅" if c[4] else "⏳"
             lines.append(f"{status} #{c[0]} — {c[1][:20] or 'Untitled'} — {c[2].upper()} — {c[3][:10]}")
 
-        await query.message.reply_text("\n".join(lines), parse_mode="Markdown", reply_markup=admin_menu())
+        await query.message.edit_text("\n".join(lines), parse_mode="Markdown", reply_markup=admin_menu())
 
     elif data == "browse_clips":
         keyboard = build_user_clips_menu()
