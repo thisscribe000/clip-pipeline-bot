@@ -628,7 +628,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_markup=user_menu()
             )
 
-elif data == "subscribe":
+    elif data == "subscribe":
         chat_id = query.from_user.id
         username = query.from_user.username or "unknown"
         conn = sqlite3.connect("bot.db")
