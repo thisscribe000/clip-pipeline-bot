@@ -344,6 +344,15 @@ async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn.commit()
     conn.close()
 
+    try:
+        await context.bot.send_message(
+            chat_id=ADMIN_ID,
+            text=f"🔔 *New Subscriber!*\n\n👤 @{username} just joined.",
+            parse_mode="Markdown"
+        )
+    except Exception:
+        pass
+
     await update.message.reply_text(
         "✅ *You're subscribed!*\n\nYou'll receive clips when they're sent out.",
         parse_mode="Markdown",
@@ -640,27 +649,21 @@ elif data == "subscribe":
         )
         conn.commit()
         conn.close()
+
+        try:
+            await context.bot.send_message(
+                chat_id=ADMIN_ID,
+                text=f"🔔 *New Subscriber!*\n\n👤 @{username} just joined.",
+                parse_mode="Markdown"
+            )
+        except Exception:
+            pass
+
         await query.message.edit_text(
             "✅ *You're subscribed!*\n\nYou'll receive clips when they're sent out.",
             parse_mode="Markdown",
             reply_markup=user_menu()
         )
-        conn.commit()
-        added = cursor.rowcount > 0
-        conn.close()
-
-        if added:
-            await query.message.edit_text(
-                "✅ *You're subscribed!*\n\nYou'll receive clips when they're sent out.\n\nUse the menu below:",
-                parse_mode="Markdown",
-                reply_markup=user_menu()
-            )
-        else:
-            await query.message.edit_text(
-                "✅ *You're already subscribed!*",
-                parse_mode="Markdown",
-                reply_markup=user_menu()
-            )
 
     elif data == "unsubscribe":
         chat_id = query.from_user.id
