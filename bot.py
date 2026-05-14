@@ -22,13 +22,10 @@ async def on_startup(app):
         BotCommand("clips", "Browse available clips"),
         BotCommand("subscribe", "Subscribe to receive clips"),
         BotCommand("unsubscribe", "Unsubscribe from clips"),
+        BotCommand("stats", "View analytics (admin)"),
         BotCommand("cancel", "Cancel current action"),
     ]
-    if app.bot._bot.id == int(BOT_TOKEN.split(":")[0]):
-        admin_commands = commands + [BotCommand("stats", "View analytics (admin)")]
-        await app.bot.set_my_commands(admin_commands)
-    else:
-        await app.bot.set_my_commands(commands)
+    await app.bot.set_my_commands(commands)
     await app.bot.set_chat_menu_button(menu_button=MenuButtonCommands())
     print("Commands and menu button registered.")
 
