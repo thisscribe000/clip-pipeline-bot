@@ -327,26 +327,28 @@ async def handle_subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     conn = sqlite3.connect("bot.db")
     cursor = conn.cursor()
-    cursor.execute(
-        "INSERT OR IGNORE INTO subscribers (chat_id, username) VALUES (?, ?)",
-        (chat_id, username)
-    )
-    conn.commit()
-    added = cursor.rowcount > 0
-    conn.close()
-
-    if added:
-        await update.message.reply_text(
-            "✅ *You're subscribed!*\n\nYou'll receive clips when they're sent out.",
-            parse_mode="Markdown",
-            reply_markup=user_menu()
-        )
-    else:
+    cursor.execute("SELECT chat_id FROM subscribers WHERE chat_id = ?", (chat_id,))
+    existing = cursor.fetchone()
+    if existing:
+        conn.close()
         await update.message.reply_text(
             "✅ *You're already subscribed!*",
             parse_mode="Markdown",
             reply_markup=user_menu()
         )
+        return
+    cursor.execute(
+        "INSERT INTO subscribers (chat_id, username) VALUES (?, ?)",
+        (chat_id, username)
+    )
+    conn.commit()
+    conn.close()
+
+    await update.message.reply_text(
+        "✅ *You're subscribed!*\n\nYou'll receive clips when they're sent out.",
+        parse_mode="Markdown",
+        reply_markup=user_menu()
+    )
 
 
 async def handle_unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -511,28 +513,29 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
 
     elif data == "view_subs":
-        conn = sqlite3.connect("bot.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM subscribers")
-        count = cursor.fetchone()[0]
-        cursor.execute("SELECT username, joined_at FROM subscribers ORDER BY joined_at DESC LIMIT 20")
-        recent = cursor.fetchall()
-        conn.close()
+        try:
+            conn = sqlite3.connect("bot.db")
+            cursor = conn.cursor()
+            cursor.execute("SELECT chat_id, username, joined_at FROM subscribers ORDER BY joined_at DESC LIMIT 20")
+            subscribers = cursor.fetchall()
+            conn.close()
 
-        if count == 0:
-            await query.message.reply_text(
-                "👥 *No subscribers yet.*\n\nShare the bot with your audience!",
-                parse_mode="Markdown",
-                reply_markup=admin_menu()
-            )
-            return
+            if not subscribers:
+                await query.message.edit_text(
+                    "👥 *No subscribers yet.*\n\nShare the bot with your audience!",
+                    parse_mode="Markdown",
+                    reply_markup=admin_menu()
+                )
+                return
 
-        lines = [f"👥 *Subscribers: {count}*\n"]
-        if recent:
-            lines.append("*Recent:*")
-            for r in recent:
-                lines.append(f"  @{r[0]} — {r[1][:10]}")
-        await query.message.reply_text("\n".join(lines), parse_mode="Markdown")
+            lines = [f"👥 *Subscribers: {len(subscribers)}*\n"]
+            for s in subscribers:
+                username = s[1] or "unknown"
+                lines.append(f"• @{username} — {s[2][:10]}")
+
+            await query.message.edit_text("\n".join(lines), parse_mode="Markdown", reply_markup=admin_menu())
+        except Exception as e:
+            await query.message.edit_text(f"❌ Error: {str(e)}", reply_markup=admin_menu())
 
     elif data == "send_message":
         await query.message.reply_text(
@@ -616,14 +619,31 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_markup=user_menu()
             )
 
-    elif data == "subscribe":
+elif data == "subscribe":
         chat_id = query.from_user.id
         username = query.from_user.username or "unknown"
         conn = sqlite3.connect("bot.db")
         cursor = conn.cursor()
+        cursor.execute("SELECT chat_id FROM subscribers WHERE chat_id = ?", (chat_id,))
+        existing = cursor.fetchone()
+        if existing:
+            conn.close()
+            await query.message.edit_text(
+                "✅ *You're already subscribed!*",
+                parse_mode="Markdown",
+                reply_markup=user_menu()
+            )
+            return
         cursor.execute(
-            "INSERT OR IGNORE INTO subscribers (chat_id, username) VALUES (?, ?)",
+            "INSERT INTO subscribers (chat_id, username) VALUES (?, ?)",
             (chat_id, username)
+        )
+        conn.commit()
+        conn.close()
+        await query.message.edit_text(
+            "✅ *You're subscribed!*\n\nYou'll receive clips when they're sent out.",
+            parse_mode="Markdown",
+            reply_markup=user_menu()
         )
         conn.commit()
         added = cursor.rowcount > 0
