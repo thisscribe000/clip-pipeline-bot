@@ -25,7 +25,7 @@
     --font-mono: 'IBM Plex Mono', monospace;
   }
 
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; width: 100%; overflow-x: hidden; }
 
   body {
     background: var(--black);
@@ -34,6 +34,8 @@
     font-size: 15px;
     line-height: 1.6;
     min-height: 100vh;
+    width: 100%;
+    position: relative;
     overflow-x: hidden;
   }
 
@@ -119,6 +121,7 @@
   section {
     padding: 72px 40px;
     position: relative;
+    overflow: hidden;
   }
 
   .section-header {
@@ -501,6 +504,7 @@
 
   .reels-scroll-wrap {
     overflow-x: auto;
+    max-width: 100%;
     scrollbar-width: thin;
     scrollbar-color: var(--lime) var(--panel2);
     padding-bottom: 12px;
@@ -910,7 +914,7 @@
     .submit-btn { padding: 12px; font-size: 10px; }
     .field-input { padding: 10px 12px; font-size: 13px; }
     .form-title { font-size: 22px; }
-    [style*="max-width:700px"] { margin: 0 -8px !important; }
+    #testimoniesList, #propheciesList, #sermonsList { margin: 0 -8px !important; max-width: none !important; }
   }
 
   @keyframes fadeUp {

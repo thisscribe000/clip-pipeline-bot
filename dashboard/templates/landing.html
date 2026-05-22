@@ -25,7 +25,7 @@
     --font-mono: 'IBM Plex Mono', monospace;
   }
 
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; width: 100%; overflow-x: hidden; }
 
   body {
     background: var(--black);
@@ -34,6 +34,8 @@
     font-size: 15px;
     line-height: 1.6;
     min-height: 100vh;
+    width: 100%;
+    position: relative;
     overflow-x: hidden;
   }
 
@@ -393,6 +395,7 @@
   section {
     padding: 72px 40px;
     position: relative;
+    overflow: hidden;
   }
 
   .section-header {
@@ -497,6 +500,7 @@
 
   .reels-scroll-wrap {
     overflow-x: auto;
+    max-width: 100%;
     scrollbar-width: thin;
     scrollbar-color: var(--lime) var(--panel2);
     padding-bottom: 12px;
@@ -1303,8 +1307,8 @@
 
   <div style="display:flex;align-items:center;gap:20px;margin-bottom:32px;padding:20px;background:var(--panel2);border:0.5px solid var(--border-soft);">
     <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:28px;">📸</div>
-    <div style="flex:1;">
-      <div style="font-family:var(--font-display);font-size:24px;letter-spacing:0.5px;">pastorenochmoments</div>
+    <div style="flex:1;min-width:0;overflow:hidden;">
+      <div style="font-family:var(--font-display);font-size:24px;letter-spacing:0.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">pastorenochmoments</div>
       <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;">Follow for faith-filled reels &amp; moments</div>
     </div>
     <a href="https://www.instagram.com/pastorenochmoments" target="_blank" style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);color:#fff;padding:10px 24px;text-decoration:none;flex-shrink:0;">Follow</a>
