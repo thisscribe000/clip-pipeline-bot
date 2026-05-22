@@ -8,1456 +8,1456 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --lime: #CCFF00;
-    --lime-dim: #a8d400;
-    --black: #0a0a0a;
-    --panel: #111111;
-    --panel2: #161616;
-    --border: rgba(204,255,0,0.18);
-    --border-soft: rgba(255,255,255,0.08);
-    --text: #ffffff;
-    --muted: #888888;
-    --font-display: 'Bebas Neue', sans-serif;
-    --font-body: 'Space Grotesk', sans-serif;
-    --font-mono: 'IBM Plex Mono', monospace;
-  }
-
-  html { scroll-behavior: smooth; width: 100%; overflow-x: hidden; }
-
-  body {
-    background: var(--black);
-    color: var(--text);
-    font-family: var(--font-body);
-    font-size: 15px;
-    line-height: 1.6;
-    min-height: 100vh;
-    width: 100%;
-    position: relative;
-    overflow-x: hidden;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.6;
-  }
-
-  nav {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 40px;
-    background: rgba(10,10,10,0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 0.5px solid var(--border-soft);
-  }
-
-  .nav-logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .logo-hex { width: 34px; height: 34px; }
-
-  .logo-wordmark {
-    font-family: var(--font-display);
-    font-size: 26px;
-    letter-spacing: 1px;
-    color: var(--text);
-  }
-
-  .logo-wordmark span { color: var(--lime); }
-
-  .nav-links {
-    display: flex;
-    gap: 28px;
-    list-style: none;
-  }
-
-  .nav-links a {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-
-  .nav-links a:hover { color: var(--lime); }
-
-  .nav-cta {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    background: var(--lime);
-    color: var(--black);
-    border: none;
-    padding: 9px 20px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background 0.2s;
-    text-decoration: none;
-    display: inline-block;
-  }
-
-  .nav-cta:hover { background: var(--lime-dim); }
-
-  .hero {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    min-height: calc(100vh - 66px);
-    position: relative;
-  }
-
-  .hero-welcome {
-    grid-column: 1;
-    padding: 60px 40px 60px 40px;
-    border-right: 0.5px solid var(--border-soft);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .hero-welcome::after {
-    content: '';
-    position: absolute;
-    bottom: -80px;
-    left: -80px;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(204,255,0,0.08) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .hero-tag {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--lime);
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .hero-tag::before {
-    content: '';
-    display: block;
-    width: 24px;
-    height: 1px;
-    background: var(--lime);
-  }
-
-  .hero-title {
-    font-family: var(--font-display);
-    font-size: clamp(52px, 5vw, 80px);
-    line-height: 0.92;
-    letter-spacing: 1px;
-    margin-bottom: 28px;
-  }
-
-  .hero-title .accent { color: var(--lime); }
-
-  .hero-desc {
-    font-size: 15px;
-    color: var(--muted);
-    line-height: 1.75;
-    max-width: 340px;
-    margin-bottom: 36px;
-  }
-
-  .hero-stats {
-    display: flex;
-    gap: 28px;
-    margin-bottom: 40px;
-  }
-
-  .stat-item {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .stat-num {
-    font-family: var(--font-display);
-    font-size: 36px;
-    color: var(--lime);
-    line-height: 1;
-  }
-
-  .stat-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .hero-btn {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    background: var(--lime);
-    color: var(--black);
-    border: none;
-    padding: 14px 28px;
-    cursor: pointer;
-    font-weight: 500;
-    align-self: flex-start;
-    transition: background 0.2s, transform 0.15s;
-    text-decoration: none;
-  }
-
-  .hero-btn:hover { background: var(--lime-dim); transform: translateY(-1px); }
-
-  .hero-slots {
-    grid-column: 2 / 4;
-    display: grid;
-    grid-template-rows: 1fr 1fr;
-  }
-
-  .slot-panel {
-    padding: 36px 40px;
-    border-bottom: 0.5px solid var(--border-soft);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .slot-panel:nth-child(odd) { border-left: 0.5px solid var(--border-soft); }
-  .slot-panel:nth-child(even) { border-left: 0.5px solid var(--border-soft); }
-
-  .slot-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-  }
-
-  .slot-title {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--lime);
-  }
-
-  .slot-badge {
-    font-family: var(--font-mono);
-    font-size: 9px;
-    letter-spacing: 1px;
-    color: var(--black);
-    background: var(--lime);
-    padding: 3px 8px;
-  }
-
-  .feature-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-
-  .feature-card {
-    background: var(--panel2);
-    border: 0.5px solid var(--border-soft);
-    padding: 20px;
-    position: relative;
-    transition: border-color 0.2s;
-  }
-
-  .feature-card:hover { border-color: var(--border); }
-
-  .feature-icon {
-    font-size: 22px;
-    margin-bottom: 10px;
-    display: block;
-  }
-
-  .feature-name {
-    font-family: var(--font-body);
-    font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 5px;
-  }
-
-  .feature-desc {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-
-  .feature-card .corner-mark {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 6px;
-    height: 6px;
-    background: var(--lime);
-    opacity: 0.4;
-  }
-
-  .community-items {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .community-item {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 12px 16px;
-    background: var(--panel2);
-    border: 0.5px solid var(--border-soft);
-    transition: border-color 0.2s;
-  }
-
-  .community-item:hover { border-color: var(--border); }
-
-  .comm-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--lime);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--black);
-    flex-shrink: 0;
-  }
-
-  .comm-info { flex: 1; }
-
-  .comm-name {
-    font-size: 13px;
-    font-weight: 500;
-  }
-
-  .comm-sub {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 1px;
-  }
-
-  .comm-time {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted);
-  }
-
-  .ticker-wrap {
-    background: var(--lime);
-    overflow: hidden;
-    white-space: nowrap;
-    padding: 10px 0;
-    position: relative;
-  }
-
-  .ticker-inner {
-    display: inline-block;
-    animation: ticker 22s linear infinite;
-  }
-
-  .ticker-inner span {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--black);
-    margin: 0 36px;
-  }
-
-  @keyframes ticker {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
-
-  section {
-    padding: 72px 40px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .section-header {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin-bottom: 36px;
-    padding-bottom: 16px;
-    border-bottom: 0.5px solid var(--border-soft);
-  }
-
-  .section-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--lime);
-    margin-bottom: 8px;
-  }
-
-  .section-title {
-    font-family: var(--font-display);
-    font-size: 42px;
-    line-height: 1;
-    letter-spacing: 1px;
-  }
-
-  .section-count {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 1px;
-    color: var(--muted);
-  }
-
-  .audio-list {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .audio-row {
-    display: grid;
-    grid-template-columns: 40px 1fr auto auto;
-    align-items: center;
-    gap: 16px;
-    padding: 14px 20px;
-    background: var(--panel);
-    border: 0.5px solid transparent;
-    transition: border-color 0.2s, background 0.2s;
-    cursor: default;
-  }
-
-  .audio-row:hover {
-    background: var(--panel2);
-    border-color: var(--border);
-  }
-
-  .track-num {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--muted);
-    text-align: center;
-  }
-
-  .track-info {}
-
-  .track-name {
-    font-size: 14px;
-    font-weight: 500;
-  }
-
-  .track-meta {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.5px;
-  }
-
-  .track-duration {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--muted);
-  }
-
-  .track-actions {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .track-access {
-    font-size: 10px;
-    font-family: var(--font-mono);
-    color: var(--lime);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  .audio-row:hover .track-access { opacity: 1; }
-
-  .reels-scroll-wrap {
-    overflow-x: auto;
-    max-width: 100%;
-    scrollbar-width: thin;
-    scrollbar-color: var(--lime) var(--panel2);
-    padding-bottom: 12px;
-  }
-
-  .reels-scroll-wrap::-webkit-scrollbar { height: 3px; }
-  .reels-scroll-wrap::-webkit-scrollbar-track { background: var(--panel2); }
-  .reels-scroll-wrap::-webkit-scrollbar-thumb { background: var(--lime); }
-
-  .reels-row {
-    display: flex;
-    gap: 16px;
-    min-width: max-content;
-  }
-
-  .reel-card {
-    width: 200px;
-    flex-shrink: 0;
-    cursor: pointer;
-    position: relative;
-    border: 0.5px solid var(--border-soft);
-    transition: border-color 0.2s, transform 0.2s;
-    background: var(--panel2);
-  }
-
-  .reel-card:hover {
-    border-color: var(--border);
-    transform: translateY(-3px);
-  }
-
-  .reel-thumb {
-    width: 100%;
-    aspect-ratio: 9/16;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .reel-thumb-bg {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 40px;
-    opacity: 0.15;
-  }
-
-  .reel-play {
-    width: 44px;
-    height: 44px;
-    border: 1.5px solid rgba(255,255,255,0.6);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    z-index: 1;
-    transition: background 0.2s, border-color 0.2s;
-  }
-
-  .reel-card:hover .reel-play {
-    background: var(--lime);
-    border-color: var(--lime);
-  }
-
-  .reel-card:hover .reel-play svg { fill: var(--black); }
-
-  .reel-play svg {
-    width: 14px;
-    height: 14px;
-    fill: white;
-    margin-left: 3px;
-  }
-
-  .reel-duration {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    background: rgba(0,0,0,0.75);
-    color: var(--text);
-    padding: 2px 6px;
-  }
-
-  .reel-views {
-    position: absolute;
-    bottom: 8px;
-    left: 8px;
-    font-family: var(--font-mono);
-    font-size: 9px;
-    letter-spacing: 0.5px;
-    background: rgba(0,0,0,0.75);
-    color: var(--text);
-    padding: 2px 6px;
-  }
-
-  .reel-info {
-    padding: 12px;
-  }
-
-  .reel-title {
-    font-size: 13px;
-    font-weight: 500;
-    margin-bottom: 4px;
-    line-height: 1.3;
-  }
-
-  .reel-tag {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-
-  .reel-stripe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 3px;
-    height: 100%;
-    background: var(--lime);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  .reel-card:hover .reel-stripe { opacity: 1; }
-
-  .signup-section { position: relative; }
-
-  .signup-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(204,255,0,0.04) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .signup-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr;
-    gap: 64px;
-    align-items: start;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-
-  .signup-pitch {
-    font-family: var(--font-display);
-    font-size: clamp(36px, 3.5vw, 56px);
-    line-height: 0.95;
-    margin-bottom: 24px;
-    letter-spacing: 0.5px;
-  }
-
-  .signup-pitch .accent { color: var(--lime); }
-
-  .signup-why {
-    font-size: 14px;
-    color: var(--muted);
-    line-height: 1.75;
-    margin-bottom: 36px;
-    max-width: 360px;
-  }
-
-  .perks {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .perk {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 13px;
-  }
-
-  .perk-dot {
-    width: 6px;
-    height: 6px;
-    background: var(--lime);
-    flex-shrink: 0;
-  }
-
-  .tabs {
-    display: flex;
-    gap: 2px;
-    margin-bottom: 28px;
-    border-bottom: 0.5px solid var(--border-soft);
-  }
-
-  .tab-btn {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    background: none;
-    border: none;
-    color: var(--muted);
-    padding: 12px 24px;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: color 0.2s, border-color 0.2s;
-  }
-
-  .tab-btn:hover { color: var(--lime); }
-
-  .tab-btn.active {
-    color: var(--lime);
-    border-bottom-color: var(--lime);
-  }
-
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
-
-  .signup-form-wrap {
-    background: var(--panel);
-    border: 0.5px solid var(--border-soft);
-    padding: 40px;
-    position: relative;
-  }
-
-  .signup-form-wrap::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--lime);
-  }
-
-  .form-title {
-    font-family: var(--font-display);
-    font-size: 28px;
-    margin-bottom: 8px;
-    letter-spacing: 0.5px;
-  }
-
-  .form-sub {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 32px;
-  }
-
-  .field-group {
-    margin-bottom: 20px;
-  }
-
-  .field-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--lime);
-    margin-bottom: 8px;
-    display: block;
-  }
-
-  .field-input {
-    width: 100%;
-    background: var(--panel2);
-    border: 0.5px solid var(--border-soft);
-    color: var(--text);
-    font-family: var(--font-body);
-    font-size: 14px;
-    padding: 12px 16px;
-    outline: none;
-    transition: border-color 0.2s;
-    appearance: none;
-    -webkit-appearance: none;
-  }
-
-  .field-input::placeholder { color: var(--muted); }
-
-  .field-input:focus {
-    border-color: var(--lime);
-    background: rgba(204,255,0,0.03);
-  }
-
-  .phone-input-group {
-    display: flex;
-    gap: 0;
-  }
-
-  .phone-input-group .field-select {
-    width: auto;
-    min-width: 100px;
-    flex-shrink: 0;
-    background: var(--panel2);
-    border: 0.5px solid var(--border-soft);
-    color: var(--text);
-    font-family: var(--font-body);
-    font-size: 14px;
-    padding: 12px 10px;
-    outline: none;
-    transition: border-color 0.2s;
-    appearance: none;
-    -webkit-appearance: none;
-    cursor: pointer;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    padding-right: 28px;
-    border-right: none;
-  }
-
-  .phone-input-group .field-select:focus {
-    border-color: var(--lime);
-    background-color: rgba(204,255,0,0.03);
-  }
-
-  .phone-input-group .field-input {
-    border-left: none;
-    flex: 1;
-  }
-
-  .player-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(10,10,10,0.97);
-    border-top: 1px solid var(--lime);
-    padding: 12px 40px;
-    display: none;
-    align-items: center;
-    gap: 24px;
-    z-index: 200;
-    backdrop-filter: blur(16px);
-  }
-
-  .player-bar.visible { display: flex; }
-
-  .player-track-info { flex: 1; }
-
-  .player-track-name {
-    font-size: 13px;
-    font-weight: 500;
-  }
-
-  .player-track-sub {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted);
-  }
-
-  .player-controls {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .ctrl-btn {
-    background: none;
-    border: none;
-    color: var(--muted);
-    cursor: pointer;
-    font-size: 18px;
-    transition: color 0.2s;
-    padding: 4px;
-  }
-
-  .ctrl-btn:hover { color: var(--lime); }
-
-  .ctrl-btn.primary {
-    width: 38px;
-    height: 38px;
-    background: var(--lime);
-    color: var(--black);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    border-radius: 50%;
-  }
-
-  .ctrl-btn.primary:hover { background: var(--lime-dim); }
-
-  .player-progress {
-    flex: 2;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .progress-time {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--muted);
-    min-width: 36px;
-  }
-
-  .progress-bar {
-    flex: 1;
-    height: 3px;
-    background: rgba(255,255,255,0.1);
-    cursor: pointer;
-    position: relative;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: var(--lime);
-    width: 0%;
-    position: relative;
-  }
-
-  .progress-fill::after {
-    content: '';
-    position: absolute;
-    right: -5px;
-    top: -3px;
-    width: 9px;
-    height: 9px;
-    background: var(--lime);
-    border-radius: 50%;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--muted);
-  }
-
-  .empty-state-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-    opacity: 0.3;
-  }
-
-  .empty-state-text {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
-  .field-hint {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted);
-    margin-top: 5px;
-    letter-spacing: 0.5px;
-  }
-
-  .submit-btn {
-    width: 100%;
-    background: var(--lime);
-    color: var(--black);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    font-weight: 500;
-    border: none;
-    padding: 16px;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: background 0.2s, transform 0.15s;
-    text-decoration: none;
-    display: inline-block;
-    text-align: center;
-  }
-
-  .submit-btn:hover { background: var(--lime-dim); transform: translateY(-1px); }
-  .submit-btn:active { transform: translateY(0); }
-
-  .form-footer {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted);
-    text-align: center;
-    margin-top: 16px;
-    letter-spacing: 0.5px;
-  }
-
-  .form-footer a { color: var(--lime); text-decoration: none; }
-
-  footer {
-    border-top: 0.5px solid var(--border-soft);
-    padding: 28px 40px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .footer-logo {
-    font-family: var(--font-display);
-    font-size: 20px;
-    letter-spacing: 1px;
-  }
-
-  .footer-logo span { color: var(--lime); }
-
-  .footer-powered {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    color: var(--muted);
-    text-transform: uppercase;
-  }
-
-  .footer-powered a {
-    color: var(--lime);
-    text-decoration: none;
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .hero-tag, .hero-title, .hero-desc, .hero-stats, .hero-btn,
-  .slot-panel, .fade-in {
-    animation: fadeUp 0.6s ease both;
-  }
-
-  .hero-tag { animation-delay: 0.1s; }
-  .hero-title { animation-delay: 0.2s; }
-  .hero-desc { animation-delay: 0.3s; }
-  .hero-stats { animation-delay: 0.4s; }
-  .hero-btn { animation-delay: 0.5s; }
-  .slot-panel:nth-child(1) { animation-delay: 0.3s; }
-  .slot-panel:nth-child(2) { animation-delay: 0.5s; }
-
-  @media (max-width: 1024px) {
-    .hero { grid-template-columns: 1fr; min-height: auto; }
-    .hero-welcome { border-right: none; border-bottom: 0.5px solid var(--border-soft); padding: 40px; }
-    .hero-slots { grid-column: 1; }
-    .slot-panel:nth-child(odd) { border-left: none; }
-    .slot-panel:nth-child(even) { border-left: none; }
-    .signup-grid { grid-template-columns: 1fr; gap: 40px; }
-  }
-
-  @media (max-width: 768px) {
-    nav { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
-    .nav-links { order: 3; width: 100%; justify-content: center; gap: 12px; padding-top: 8px; border-top: 0.5px solid var(--border-soft); }
-    .nav-links a { font-size: 9px; letter-spacing: 1px; }
-    .logo-wordmark { font-size: 20px; }
-    .logo-hex { width: 26px; height: 26px; }
-    .hero-welcome { padding: 32px 20px; }
-    .hero-stats { gap: 16px; flex-wrap: wrap; }
-    .stat-num { font-size: 28px; }
-    .ticker-inner span { font-size: 10px; margin: 0 24px; }
-    .slot-panel { padding: 24px 20px; }
-    .feature-grid { grid-template-columns: 1fr; }
-    section { padding: 36px 16px; }
-    .section-title { font-size: 28px; }
-    .section-header { flex-direction: column; align-items: flex-start; gap: 8px; }
-    .signup-section { padding: 36px 16px; }
-    .signup-form-wrap { padding: 24px; }
-    .phone-input-group { flex-wrap: wrap; }
-    .phone-input-group .field-select { min-width: 80px; }
-    .audio-row { grid-template-columns: 30px 1fr auto; padding: 10px 12px; gap: 8px; }
-    #reels > div:first-of-type { flex-direction: column !important; text-align: center; }
-    .track-duration { display: none; }
-    .player-bar { padding: 10px 12px; flex-wrap: wrap; gap: 10px; }
-    .player-progress { order: 3; width: 100%; flex: none; }
-    .player-controls { gap: 8px; }
-    .ctrl-btn { font-size: 14px; }
-    .ctrl-btn.primary { width: 30px; height: 30px; font-size: 12px; }
-    .tabs { overflow-x: auto; gap: 0; }
-    .tab-btn { padding: 10px 14px; font-size: 9px; white-space: nowrap; }
-    footer { flex-direction: column; gap: 8px; text-align: center; padding: 20px 16px; }
-  }
-
-  @media (max-width: 480px) {
-    nav { padding: 10px 12px; }
-    .nav-links { gap: 8px; }
-    .nav-links a { font-size: 8px; letter-spacing: 0.5px; }
-    .logo-wordmark { font-size: 18px; }
-    .logo-hex { width: 22px; height: 22px; }
-    .hero-welcome { padding: 24px 16px; }
-    .hero-title { font-size: 40px; }
-    .hero-desc { font-size: 13px; max-width: 100%; }
-    .hero-stats { flex-wrap: wrap; gap: 12px; }
-    .stat-num { font-size: 24px; }
-    .stat-label { font-size: 8px; }
-    .slot-panel { padding: 20px 16px; }
-    .ticker-inner span { font-size: 9px; margin: 0 20px; }
-    section { padding: 24px 12px; }
-    .section-title { font-size: 24px; }
-    .feature-grid { gap: 10px; }
-    .feature-card { padding: 14px; }
-    .feature-name { font-size: 12px; }
-    .feature-desc { font-size: 11px; }
-    .community-item { padding: 10px 12px; }
-    .comm-name { font-size: 12px; }
-    .comm-sub { font-size: 9px; }
-    .audio-row { padding: 8px 10px; }
-    .track-name { font-size: 12px; }
-    .track-meta { font-size: 9px; }
-    .phone-input-group { flex-direction: column; gap: 8px; }
-    .phone-input-group .field-select { width: 100%; border-right: 0.5px solid var(--border-soft); border-bottom: none; }
-    .phone-input-group .field-input { border-left: 0.5px solid var(--border-soft); border-top: none; }
-    .signup-section { padding: 24px 12px; }
-    .signup-form-wrap { padding: 16px; }
-    .form-title { font-size: 22px; }
-    .submit-btn { padding: 12px; font-size: 10px; }
-    .field-input { padding: 10px 12px; font-size: 13px; }
-    .reel-card { width: 140px; }
-    #reels > div:first-of-type { gap: 12px !important; padding: 14px !important; }
-    .reel-title { font-size: 11px; }
-    .reel-thumb { min-height: 240px; }
-    .hero-btn { font-size: 10px; padding: 12px 20px; }
-    .nav-cta { font-size: 10px; padding: 7px 14px; }
-    .player-bar { padding: 8px 10px; }
-    .player-track-name { font-size: 11px; }
-    .tab-btn { padding: 8px 10px; font-size: 8px; letter-spacing: 1px; }
-    .text-card { padding: 14px !important; }
-    .text-card div[style*="font-family:var(--font-display)"] { font-size: 16px !important; }
-  }
+ *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+ :root {
+ --lime: #CCFF00;
+ --lime-dim: #a8d400;
+ --black: #0a0a0a;
+ --panel: #111111;
+ --panel2: #161616;
+ --border: rgba(204,255,0,0.18);
+ --border-soft: rgba(255,255,255,0.08);
+ --text: #ffffff;
+ --muted: #888888;
+ --font-display: 'Bebas Neue', sans-serif;
+ --font-body: 'Space Grotesk', sans-serif;
+ --font-mono: 'IBM Plex Mono', monospace;
+ }
+
+ html { scroll-behavior: smooth; width: 100%; overflow-x: hidden; }
+
+ body {
+ background: var(--black);
+ color: var(--text);
+ font-family: var(--font-body);
+ font-size: 15px;
+ line-height: 1.6;
+ min-height: 100vh;
+ width: 100%;
+ position: relative;
+ overflow-x: hidden;
+ }
+
+ body::before {
+ content: '';
+ position: fixed;
+ inset: 0;
+ background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+ pointer-events: none;
+ z-index: 0;
+ opacity: 0.6;
+ }
+
+ nav {
+ position: sticky;
+ top: 0;
+ z-index: 100;
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ padding: 16px 40px;
+ background: rgba(10,10,10,0.92);
+ backdrop-filter: blur(12px);
+ border-bottom: 0.5px solid var(--border-soft);
+ }
+
+ .nav-logo {
+ display: flex;
+ align-items: center;
+ gap: 10px;
+ }
+
+ .logo-hex { width: 34px; height: 34px; }
+
+ .logo-wordmark {
+ font-family: var(--font-display);
+ font-size: 26px;
+ letter-spacing: 1px;
+ color: var(--text);
+ }
+
+ .logo-wordmark span { color: var(--lime); }
+
+ .nav-links {
+ display: flex;
+ gap: 28px;
+ list-style: none;
+ }
+
+ .nav-links a {
+ font-family: var(--font-mono);
+ font-size: 11px;
+ letter-spacing: 2px;
+ text-transform: uppercase;
+ color: var(--muted);
+ text-decoration: none;
+ transition: color 0.2s;
+ }
+
+ .nav-links a:hover { color: var(--lime); }
+
+ .nav-cta {
+ font-family: var(--font-mono);
+ font-size: 11px;
+ letter-spacing: 2px;
+ text-transform: uppercase;
+ background: var(--lime);
+ color: var(--black);
+ border: none;
+ padding: 9px 20px;
+ cursor: pointer;
+ font-weight: 500;
+ transition: background 0.2s;
+ text-decoration: none;
+ display: inline-block;
+ }
+
+ .nav-cta:hover { background: var(--lime-dim); }
+
+ .hero {
+ display: grid;
+ grid-template-columns: 1fr 1fr 1fr;
+ min-height: calc(100vh - 66px);
+ position: relative;
+ }
+
+ .hero-welcome {
+ grid-column: 1;
+ padding: 60px 40px 60px 40px;
+ border-right: 0.5px solid var(--border-soft);
+ display: flex;
+ flex-direction: column;
+ justify-content: center;
+ position: relative;
+ overflow: hidden;
+ }
+
+ .hero-welcome::after {
+ content: '';
+ position: absolute;
+ bottom: -80px;
+ left: -80px;
+ width: 300px;
+ height: 300px;
+ background: radial-gradient(circle, rgba(204,255,0,0.08) 0%, transparent 70%);
+ pointer-events: none;
+ }
+
+ .hero-tag {
+ font-family: var(--font-mono);
+ font-size: 10px;
+ letter-spacing: 3px;
+ text-transform: uppercase;
+ color: var(--lime);
+ margin-bottom: 20px;
+ display: flex;
+ align-items: center;
+ gap: 8px;
+ }
+
+ .hero-tag::before {
+ content: '';
+ display: block;
+ width: 24px;
+ height: 1px;
+ background: var(--lime);
+ }
+
+ .hero-title {
+ font-family: var(--font-display);
+ font-size: clamp(52px, 5vw, 80px);
+ line-height: 0.92;
+ letter-spacing: 1px;
+ margin-bottom: 28px;
+ }
+
+ .hero-title .accent { color: var(--lime); }
+
+ .hero-desc {
+ font-size: 15px;
+ color: var(--muted);
+ line-height: 1.75;
+ max-width: 340px;
+ margin-bottom: 36px;
+ }
+
+ .hero-stats {
+ display: flex;
+ gap: 28px;
+ margin-bottom: 40px;
+ }
+
+ .stat-item {
+ display: flex;
+ flex-direction: column;
+ }
+
+ .stat-num {
+ font-family: var(--font-display);
+ font-size: 36px;
+ color: var(--lime);
+ line-height: 1;
+ }
+
+ .stat-label {
+ font-family: var(--font-mono);
+ font-size: 10px;
+ letter-spacing: 2px;
+ text-transform: uppercase;
+ color: var(--muted);
+ }
+
+ .hero-btn {
+ font-family: var(--font-mono);
+ font-size: 11px;
+ letter-spacing: 2px;
+ text-transform: uppercase;
+ background: var(--lime);
+ color: var(--black);
+ border: none;
+ padding: 14px 28px;
+ cursor: pointer;
+ font-weight: 500;
+ align-self: flex-start;
+ transition: background 0.2s, transform 0.15s;
+ text-decoration: none;
+ }
+
+ .hero-btn:hover { background: var(--lime-dim); transform: translateY(-1px); }
+
+ .hero-slots {
+ grid-column: 2 / 4;
+ display: grid;
+ grid-template-rows: 1fr 1fr;
+ }
+
+ .slot-panel {
+ padding: 36px 40px;
+ border-bottom: 0.5px solid var(--border-soft);
+ position: relative;
+ overflow: hidden;
+ }
+
+ .slot-panel:nth-child(odd) { border-left: 0.5px solid var(--border-soft); }
+ .slot-panel:nth-child(even) { border-left: 0.5px solid var(--border-soft); }
+
+ .slot-header {
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ margin-bottom: 24px;
+ }
+
+ .slot-title {
+ font-family: var(--font-mono);
+ font-size: 10px;
+ letter-spacing: 3px;
+ text-transform: uppercase;
+ color: var(--lime);
+ }
+
+ .slot-badge {
+ font-family: var(--font-mono);
+ font-size: 9px;
+ letter-spacing: 1px;
+ color: var(--black);
+ background: var(--lime);
+ padding: 3px 8px;
+ }
+
+ .feature-grid {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 16px;
+ }
+
+ .feature-card {
+ background: var(--panel2);
+ border: 0.5px solid var(--border-soft);
+ padding: 20px;
+ position: relative;
+ transition: border-color 0.2s;
+ }
+
+ .feature-card:hover { border-color: var(--border); }
+
+ .feature-icon {
+ font-size: 22px;
+ margin-bottom: 10px;
+ display: block;
+ }
+
+ .feature-name {
+ font-family: var(--font-body);
+ font-size: 14px;
+ font-weight: 500;
+ margin-bottom: 5px;
+ }
+
+ .feature-desc {
+ font-size: 12px;
+ color: var(--muted);
+ line-height: 1.5;
+ }
+
+ .feature-card .corner-mark {
+ position: absolute;
+ top: 10px;
+ right: 10px;
+ width: 6px;
+ height: 6px;
+ background: var(--lime);
+ opacity: 0.4;
+ }
+
+ .community-items {
+ display: flex;
+ flex-direction: column;
+ gap: 10px;
+ }
+
+ .community-item {
+ display: flex;
+ align-items: center;
+ gap: 14px;
+ padding: 12px 16px;
+ background: var(--panel2);
+ border: 0.5px solid var(--border-soft);
+ transition: border-color 0.2s;
+ }
+
+ .community-item:hover { border-color: var(--border); }
+
+ .comm-avatar {
+ width: 36px;
+ height: 36px;
+ border-radius: 50%;
+ background: var(--lime);
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ font-family: var(--font-mono);
+ font-size: 12px;
+ font-weight: 500;
+ color: var(--black);
+ flex-shrink: 0;
+ }
+
+ .comm-info { flex: 1; }
+
+ .comm-name {
+ font-size: 13px;
+ font-weight: 500;
+ }
+
+ .comm-sub {
+ font-family: var(--font-mono);
+ font-size: 10px;
+ color: var(--muted);
+ letter-spacing: 1px;
+ }
+
+ .comm-time {
+ font-family: var(--font-mono);
+ font-size: 10px;
+ color: var(--muted);
+ }
+
+ .ticker-wrap {
+ background: var(--lime);
+ overflow: hidden;
+ white-space: nowrap;
+ padding: 10px 0;
+ position: relative;
+ }
+
+ .ticker-inner {
+ display: inline-block;
+ animation: ticker 22s linear infinite;
+ }
+
+ .ticker-inner span {
+ font-family: var(--font-mono);
+ font-size: 11px;
+ font-weight: 500;
+ letter-spacing: 2px;
+ text-transform: uppercase;
+ color: var(--black);
+ margin: 0 36px;
+ }
+
+ @keyframes ticker {
+ from { transform: translateX(0); }
+ to { transform: translateX(-50%); }
+ }
+
+ section {
+ padding: 72px 40px;
+ position: relative;
+ overflow: hidden;
+ }
+
+ .section-header {
+ display: flex;
+ align-items: flex-end;
+ justify-content: space-between;
+ margin-bottom: 36px;
+ padding-bottom: 16px;
+ border-bottom: 0.5px solid var(--border-soft);
+ }
+
+ .section-label {
+ font-family: var(--font-mono);
+ font-size: 10px;
+ letter-spacing: 3px;
+ text-transform: uppercase;
+ color: var(--lime);
+ margin-bottom: 8px;
+ }
+
+ .section-title {
+ font-family: var(--font-display);
+ font-size: 42px;
+ line-height: 1;
+ letter-spacing: 1px;
+ }
+
+ .section-count {
+ font-family: var(--font-mono);
+ font-size: 11px;
+ letter-spacing: 1px;
+ color: var(--muted);
+ }
+
+ .audio-list {
+ display: flex;
+ flex-direction: column;
+ gap: 2px;
+ }
+
+ .audio-row {
+ display: grid;
+ grid-template-columns: 40px 1fr auto auto;
+ align-items: center;
+ gap: 16px;
+ padding: 14px 20px;
+ background: var(--panel);
+ border: 0.5px solid transparent;
+ transition: border-color 0.2s, background 0.2s;
+ cursor: default;
+ }
+
+ .audio-row:hover {
+ background: var(--panel2);
+ border-color: var(--border);
+ }
+
+ .track-num {
+ font-family: var(--font-mono);
+ font-size: 12px;
+ color: var(--muted);
+ text-align: center;
+ }
+
+ .track-info {}
+
+ .track-name {
+ font-size: 14px;
+ font-weight: 500;
+ }
+
+ .track-meta {
+ font-family: var(--font-mono);
+ font-size: 11px;
+ color: var(--muted);
+ letter-spacing: 0.5px;
+ }
+
+ .track-duration {
+ font-family: var(--font-mono);
+ font-size: 12px;
+ color: var(--muted);
+ }
+
+ .track-actions {
+ display: flex;
+ gap: 8px;
+ align-items: center;
+ }
+
+ .track-access {
+ font-size: 10px;
+ font-family: var(--font-mono);
+ color: var(--lime);
+ letter-spacing: 1px;
+ text-transform: uppercase;
+ opacity: 0;
+ transition: opacity 0.2s;
+ }
+
+ .audio-row:hover .track-access { opacity: 1; }
+
+ .reels-scroll-wrap {
+ overflow-x: auto;
+ max-width: 100%;
+ scrollbar-width: thin;
+ scrollbar-color: var(--lime) var(--panel2);
+ padding-bottom: 12px;
+ }
+
+ .reels-scroll-wrap::-webkit-scrollbar { height: 3px; }
+ .reels-scroll-wrap::-webkit-scrollbar-track { background: var(--panel2); }
+ .reels-scroll-wrap::-webkit-scrollbar-thumb { background: var(--lime); }
+
+ .reels-row {
+ display: flex;
+ gap: 16px;
+ min-width: max-content;
+ }
+
+ .reel-card {
+ width: 200px;
+ flex-shrink: 0;
+ cursor: pointer;
+ position: relative;
+ border: 0.5px solid var(--border-soft);
+ transition: border-color 0.2s, transform 0.2s;
+ background: var(--panel2);
+ }
+
+ .reel-card:hover {
+ border-color: var(--border);
+ transform: translateY(-3px);
+ }
+
+ .reel-thumb {
+ width: 100%;
+ aspect-ratio: 9/16;
+ position: relative;
+ overflow: hidden;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ }
+
+ .reel-thumb-bg {
+ position: absolute;
+ inset: 0;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ font-size: 40px;
+ opacity: 0.15;
+ }
+
+ .reel-play {
+ width: 44px;
+ height: 44px;
+ border: 1.5px solid rgba(255,255,255,0.6);
+ border-radius: 50%;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ position: relative;
+ z-index: 1;
+ transition: background 0.2s, border-color 0.2s;
+ }
+
+ .reel-card:hover .reel-play {
+ background: var(--lime);
+ border-color: var(--lime);
+ }
+
+ .reel-card:hover .reel-play svg { fill: var(--black); }
+
+ .reel-play svg {
+ width: 14px;
+ height: 14px;
+ fill: white;
+ margin-left: 3px;
+ }
+
+ .reel-duration {
+ position: absolute;
+ bottom: 8px;
+ right: 8px;
+ font-family: var(--font-mono);
+ font-size: 10px;
+ background: rgba(0,0,0,0.75);
+ color: var(--text);
+ padding: 2px 6px;
+ }
+
+ .reel-views {
+ position: absolute;
+ bottom: 8px;
+ left: 8px;
+ font-family: var(--font-mono);
+ font-size: 9px;
+ letter-spacing: 0.5px;
+ background: rgba(0,0,0,0.75);
+ color: var(--text);
+ padding: 2px 6px;
+ }
+
+ .reel-info {
+ padding: 12px;
+ }
+
+ .reel-title {
+ font-size: 13px;
+ font-weight: 500;
+ margin-bottom: 4px;
+ line-height: 1.3;
+ }
+
+ .reel-tag {
+ font-family: var(--font-mono);
+ font-size: 10px;
+ color: var(--muted);
+ letter-spacing: 1px;
+ text-transform: uppercase;
+ }
+
+ .reel-stripe {
+ position: absolute;
+ top: 0;
+ left: 0;
+ width: 3px;
+ height: 100%;
+ background: var(--lime);
+ opacity: 0;
+ transition: opacity 0.2s;
+ }
+
+ .reel-card:hover .reel-stripe { opacity: 1; }
+
+ .signup-section { position: relative; }
+
+ .signup-section::before {
+ content: '';
+ position: absolute;
+ top: 0;
+ left: 50%;
+ transform: translateX(-50%);
+ width: 600px;
+ height: 600px;
+ background: radial-gradient(circle, rgba(204,255,0,0.04) 0%, transparent 70%);
+ pointer-events: none;
+ }
+
+ .signup-grid {
+ display: grid;
+ grid-template-columns: 1fr 1.2fr;
+ gap: 64px;
+ align-items: start;
+ max-width: 1100px;
+ margin: 0 auto;
+ }
+
+ .signup-pitch {
+ font-family: var(--font-display);
+ font-size: clamp(36px, 3.5vw, 56px);
+ line-height: 0.95;
+ margin-bottom: 24px;
+ letter-spacing: 0.5px;
+ }
+
+ .signup-pitch .accent { color: var(--lime); }
+
+ .signup-why {
+ font-size: 14px;
+ color: var(--muted);
+ line-height: 1.75;
+ margin-bottom: 36px;
+ max-width: 360px;
+ }
+
+ .perks {
+ display: flex;
+ flex-direction: column;
+ gap: 14px;
+ }
+
+ .perk {
+ display: flex;
+ align-items: center;
+ gap: 12px;
+ font-size: 13px;
+ }
+
+ .perk-dot {
+ width: 6px;
+ height: 6px;
+ background: var(--lime);
+ flex-shrink: 0;
+ }
+
+ .tabs {
+ display: flex;
+ gap: 2px;
+ margin-bottom: 28px;
+ border-bottom: 0.5px solid var(--border-soft);
+ }
+
+ .tab-btn {
+ font-family: var(--font-mono);
+ font-size: 11px;
+ letter-spacing: 2px;
+ text-transform: uppercase;
+ background: none;
+ border: none;
+ color: var(--muted);
+ padding: 12px 24px;
+ cursor: pointer;
+ border-bottom: 2px solid transparent;
+ transition: color 0.2s, border-color 0.2s;
+ }
+
+ .tab-btn:hover { color: var(--lime); }
+
+ .tab-btn.active {
+ color: var(--lime);
+ border-bottom-color: var(--lime);
+ }
+
+ .tab-content { display: none; }
+ .tab-content.active { display: block; }
+
+ .signup-form-wrap {
+ background: var(--panel);
+ border: 0.5px solid var(--border-soft);
+ padding: 40px;
+ position: relative;
+ }
+
+ .signup-form-wrap::before {
+ content: '';
+ position: absolute;
+ top: 0;
+ left: 0;
+ right: 0;
+ height: 2px;
+ background: var(--lime);
+ }
+
+ .form-title {
+ font-family: var(--font-display);
+ font-size: 28px;
+ margin-bottom: 8px;
+ letter-spacing: 0.5px;
+ }
+
+ .form-sub {
+ font-family: var(--font-mono);
+ font-size: 10px;
+ letter-spacing: 2px;
+ text-transform: uppercase;
+ color: var(--muted);
+ margin-bottom: 32px;
+ }
+
+ .field-group {
+ margin-bottom: 20px;
+ }
+
+ .field-label {
+ font-family: var(--font-mono);
+ font-size: 10px;
+ letter-spacing: 2px;
+ text-transform: uppercase;
+ color: var(--lime);
+ margin-bottom: 8px;
+ display: block;
+ }
+
+ .field-input {
+ width: 100%;
+ background: var(--panel2);
+ border: 0.5px solid var(--border-soft);
+ color: var(--text);
+ font-family: var(--font-body);
+ font-size: 14px;
+ padding: 12px 16px;
+ outline: none;
+ transition: border-color 0.2s;
+ appearance: none;
+ -webkit-appearance: none;
+ }
+
+ .field-input::placeholder { color: var(--muted); }
+
+ .field-input:focus {
+ border-color: var(--lime);
+ background: rgba(204,255,0,0.03);
+ }
+
+ .phone-input-group {
+ display: flex;
+ gap: 0;
+ }
+
+ .phone-input-group .field-select {
+ width: auto;
+ min-width: 100px;
+ flex-shrink: 0;
+ background: var(--panel2);
+ border: 0.5px solid var(--border-soft);
+ color: var(--text);
+ font-family: var(--font-body);
+ font-size: 14px;
+ padding: 12px 10px;
+ outline: none;
+ transition: border-color 0.2s;
+ appearance: none;
+ -webkit-appearance: none;
+ cursor: pointer;
+ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+ background-repeat: no-repeat;
+ background-position: right 10px center;
+ padding-right: 28px;
+ border-right: none;
+ }
+
+ .phone-input-group .field-select:focus {
+ border-color: var(--lime);
+ background-color: rgba(204,255,0,0.03);
+ }
+
+ .phone-input-group .field-input {
+ border-left: none;
+ flex: 1;
+ }
+
+ .player-bar {
+ position: fixed;
+ bottom: 0;
+ left: 0;
+ right: 0;
+ background: rgba(10,10,10,0.97);
+ border-top: 1px solid var(--lime);
+ padding: 12px 40px;
+ display: none;
+ align-items: center;
+ gap: 24px;
+ z-index: 200;
+ backdrop-filter: blur(16px);
+ }
+
+ .player-bar.visible { display: flex; }
+
+ .player-track-info { flex: 1; }
+
+ .player-track-name {
+ font-size: 13px;
+ font-weight: 500;
+ }
+
+ .player-track-sub {
+ font-family: var(--font-mono);
+ font-size: 10px;
+ color: var(--muted);
+ }
+
+ .player-controls {
+ display: flex;
+ align-items: center;
+ gap: 16px;
+ }
+
+ .ctrl-btn {
+ background: none;
+ border: none;
+ color: var(--muted);
+ cursor: pointer;
+ font-size: 18px;
+ transition: color 0.2s;
+ padding: 4px;
+ }
+
+ .ctrl-btn:hover { color: var(--lime); }
+
+ .ctrl-btn.primary {
+ width: 38px;
+ height: 38px;
+ background: var(--lime);
+ color: var(--black);
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ font-size: 16px;
+ border-radius: 50%;
+ }
+
+ .ctrl-btn.primary:hover { background: var(--lime-dim); }
+
+ .player-progress {
+ flex: 2;
+ display: flex;
+ align-items: center;
+ gap: 10px;
+ }
+
+ .progress-time {
+ font-family: var(--font-mono);
+ font-size: 11px;
+ color: var(--muted);
+ min-width: 36px;
+ }
+
+ .progress-bar {
+ flex: 1;
+ height: 3px;
+ background: rgba(255,255,255,0.1);
+ cursor: pointer;
+ position: relative;
+ }
+
+ .progress-fill {
+ height: 100%;
+ background: var(--lime);
+ width: 0%;
+ position: relative;
+ }
+
+ .progress-fill::after {
+ content: '';
+ position: absolute;
+ right: -5px;
+ top: -3px;
+ width: 9px;
+ height: 9px;
+ background: var(--lime);
+ border-radius: 50%;
+ }
+
+ .empty-state {
+ text-align: center;
+ padding: 60px 20px;
+ color: var(--muted);
+ }
+
+ .empty-state-icon {
+ font-size: 48px;
+ margin-bottom: 16px;
+ opacity: 0.3;
+ }
+
+ .empty-state-text {
+ font-family: var(--font-mono);
+ font-size: 11px;
+ letter-spacing: 2px;
+ text-transform: uppercase;
+ }
+
+ .field-hint {
+ font-family: var(--font-mono);
+ font-size: 10px;
+ color: var(--muted);
+ margin-top: 5px;
+ letter-spacing: 0.5px;
+ }
+
+ .submit-btn {
+ width: 100%;
+ background: var(--lime);
+ color: var(--black);
+ font-family: var(--font-mono);
+ font-size: 12px;
+ letter-spacing: 3px;
+ text-transform: uppercase;
+ font-weight: 500;
+ border: none;
+ padding: 16px;
+ cursor: pointer;
+ margin-top: 10px;
+ transition: background 0.2s, transform 0.15s;
+ text-decoration: none;
+ display: inline-block;
+ text-align: center;
+ }
+
+ .submit-btn:hover { background: var(--lime-dim); transform: translateY(-1px); }
+ .submit-btn:active { transform: translateY(0); }
+
+ .form-footer {
+ font-family: var(--font-mono);
+ font-size: 10px;
+ color: var(--muted);
+ text-align: center;
+ margin-top: 16px;
+ letter-spacing: 0.5px;
+ }
+
+ .form-footer a { color: var(--lime); text-decoration: none; }
+
+ footer {
+ border-top: 0.5px solid var(--border-soft);
+ padding: 28px 40px;
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ }
+
+ .footer-logo {
+ font-family: var(--font-display);
+ font-size: 20px;
+ letter-spacing: 1px;
+ }
+
+ .footer-logo span { color: var(--lime); }
+
+ .footer-powered {
+ font-family: var(--font-mono);
+ font-size: 10px;
+ letter-spacing: 1.5px;
+ color: var(--muted);
+ text-transform: uppercase;
+ }
+
+ .footer-powered a {
+ color: var(--lime);
+ text-decoration: none;
+ }
+
+ @keyframes fadeUp {
+ from { opacity: 0; transform: translateY(20px); }
+ to { opacity: 1; transform: translateY(0); }
+ }
+
+ .hero-tag, .hero-title, .hero-desc, .hero-stats, .hero-btn,
+ .slot-panel, .fade-in {
+ animation: fadeUp 0.6s ease both;
+ }
+
+ .hero-tag { animation-delay: 0.1s; }
+ .hero-title { animation-delay: 0.2s; }
+ .hero-desc { animation-delay: 0.3s; }
+ .hero-stats { animation-delay: 0.4s; }
+ .hero-btn { animation-delay: 0.5s; }
+ .slot-panel:nth-child(1) { animation-delay: 0.3s; }
+ .slot-panel:nth-child(2) { animation-delay: 0.5s; }
+
+ @media (max-width: 1024px) {
+ .hero { grid-template-columns: 1fr; min-height: auto; }
+ .hero-welcome { border-right: none; border-bottom: 0.5px solid var(--border-soft); padding: 40px; }
+ .hero-slots { grid-column: 1; }
+ .slot-panel:nth-child(odd) { border-left: none; }
+ .slot-panel:nth-child(even) { border-left: none; }
+ .signup-grid { grid-template-columns: 1fr; gap: 40px; }
+ }
+
+ @media (max-width: 768px) {
+ nav { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+ .nav-links { order: 3; width: 100%; justify-content: center; gap: 12px; padding-top: 8px; border-top: 0.5px solid var(--border-soft); }
+ .nav-links a { font-size: 9px; letter-spacing: 1px; }
+ .logo-wordmark { font-size: 20px; }
+ .logo-hex { width: 26px; height: 26px; }
+ .hero-welcome { padding: 32px 20px; }
+ .hero-stats { gap: 16px; flex-wrap: wrap; }
+ .stat-num { font-size: 28px; }
+ .ticker-inner span { font-size: 10px; margin: 0 24px; }
+ .slot-panel { padding: 24px 20px; }
+ .feature-grid { grid-template-columns: 1fr; }
+ section { padding: 36px 16px; }
+ .section-title { font-size: 28px; }
+ .section-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+ .signup-section { padding: 36px 16px; }
+ .signup-form-wrap { padding: 24px; }
+ .phone-input-group { flex-wrap: wrap; }
+ .phone-input-group .field-select { min-width: 80px; }
+ .audio-row { grid-template-columns: 30px 1fr auto; padding: 10px 12px; gap: 8px; }
+ #reels > div:first-of-type { flex-direction: column !important; text-align: center; }
+ .track-duration { display: none; }
+ .player-bar { padding: 10px 12px; flex-wrap: wrap; gap: 10px; }
+ .player-progress { order: 3; width: 100%; flex: none; }
+ .player-controls { gap: 8px; }
+ .ctrl-btn { font-size: 14px; }
+ .ctrl-btn.primary { width: 30px; height: 30px; font-size: 12px; }
+ .tabs { overflow-x: auto; gap: 0; }
+ .tab-btn { padding: 10px 14px; font-size: 9px; white-space: nowrap; }
+ footer { flex-direction: column; gap: 8px; text-align: center; padding: 20px 16px; }
+ }
+
+ @media (max-width: 480px) {
+ nav { padding: 10px 12px; }
+ .nav-links { gap: 8px; }
+ .nav-links a { font-size: 8px; letter-spacing: 0.5px; }
+ .logo-wordmark { font-size: 18px; }
+ .logo-hex { width: 22px; height: 22px; }
+ .hero-welcome { padding: 24px 16px; }
+ .hero-title { font-size: 40px; }
+ .hero-desc { font-size: 13px; max-width: 100%; }
+ .hero-stats { flex-wrap: wrap; gap: 12px; }
+ .stat-num { font-size: 24px; }
+ .stat-label { font-size: 8px; }
+ .slot-panel { padding: 20px 16px; }
+ .ticker-inner span { font-size: 9px; margin: 0 20px; }
+ section { padding: 24px 12px; }
+ .section-title { font-size: 24px; }
+ .feature-grid { gap: 10px; }
+ .feature-card { padding: 14px; }
+ .feature-name { font-size: 12px; }
+ .feature-desc { font-size: 11px; }
+ .community-item { padding: 10px 12px; }
+ .comm-name { font-size: 12px; }
+ .comm-sub { font-size: 9px; }
+ .audio-row { padding: 8px 10px; }
+ .track-name { font-size: 12px; }
+ .track-meta { font-size: 9px; }
+ .phone-input-group { flex-direction: column; gap: 8px; }
+ .phone-input-group .field-select { width: 100%; border-right: 0.5px solid var(--border-soft); border-bottom: none; }
+ .phone-input-group .field-input { border-left: 0.5px solid var(--border-soft); border-top: none; }
+ .signup-section { padding: 24px 12px; }
+ .signup-form-wrap { padding: 16px; }
+ .form-title { font-size: 22px; }
+ .submit-btn { padding: 12px; font-size: 10px; }
+ .field-input { padding: 10px 12px; font-size: 13px; }
+ .reel-card { width: 140px; }
+ #reels > div:first-of-type { gap: 12px !important; padding: 14px !important; }
+ .reel-title { font-size: 11px; }
+ .reel-thumb { min-height: 240px; }
+ .hero-btn { font-size: 10px; padding: 12px 20px; }
+ .nav-cta { font-size: 10px; padding: 7px 14px; }
+ .player-bar { padding: 8px 10px; }
+ .player-track-name { font-size: 11px; }
+ .tab-btn { padding: 8px 10px; font-size: 8px; letter-spacing: 1px; }
+ .text-card { padding: 14px !important; }
+ .text-card div[style*="font-family:var(--font-display)"] { font-size: 16px !important; }
+ }
 </style>
 </head>
 <body>
 
 <nav>
-  <a href="/" class="nav-logo" style="text-decoration:none;display:flex;align-items:center;gap:10px;">
-    <svg class="logo-hex" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M17 2L30 9.5V24.5L17 32L4 24.5V9.5L17 2Z" fill="#CCFF00"/>
-      <polygon points="13,12 22,17 13,22" fill="#0a0a0a"/>
-    </svg>
-    <span class="logo-wordmark">Share <span>Still</span></span>
-  </a>
-  <ul class="nav-links">
-    <li><a href="#audio">Audio</a></li>
-    <li><a href="#reels">Reels</a></li>
-    <li><a href="#join">Join</a></li>
-    {% if session.user_id or session.admin_id %}
-      <li><a href="{{ url_for('logout') }}">Logout</a></li>
-    {% endif %}
-  </ul>
-  {% if session.user_id or session.admin_id %}
-    <a href="{{ url_for('logout') }}" class="nav-cta" style="background:var(--panel2);border-color:var(--border-soft);color:var(--muted);">Logout</a>
-  {% else %}
-    <a href="{{ url_for('login') }}" class="nav-cta">Get In</a>
-  {% endif %}
+ <a href="/" class="nav-logo" style="text-decoration:none;display:flex;align-items:center;gap:10px;">
+ <svg class="logo-hex" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+ <path d="M17 2L30 9.5V24.5L17 32L4 24.5V9.5L17 2Z" fill="#CCFF00"/>
+ <polygon points="13,12 22,17 13,22" fill="#0a0a0a"/>
+ </svg>
+ <span class="logo-wordmark">Share <span>Still</span></span>
+ </a>
+ <ul class="nav-links">
+ <li><a href="#audio">Audio</a></li>
+ <li><a href="#reels">Reels</a></li>
+ <li><a href="#join">Join</a></li>
+ {% if session.user_id or session.admin_id %}
+ <li><a href="{{ url_for('logout') }}">Logout</a></li>
+ {% endif %}
+ </ul>
+ {% if session.user_id or session.admin_id %}
+ <a href="{{ url_for('logout') }}" class="nav-cta" style="background:var(--panel2);border-color:var(--border-soft);color:var(--muted);">Logout</a>
+ {% else %}
+ <a href="{{ url_for('login') }}" class="nav-cta">Get In</a>
+ {% endif %}
 </nav>
 
 <div class="hero">
-  <div class="hero-welcome">
-    <div class="hero-tag">Broadcasting Live</div>
-    <h1 class="hero-title">Share <span class="accent">Still</span><br>Listen.<br>Watch.</h1>
-    <p class="hero-desc">A curated space for audio messages, video reels, and community connection — delivered through your favourite platforms.</p>
-    <div class="hero-stats">
-      <div class="stat-item">
-        <span class="stat-num" id="statClips">—</span>
-        <span class="stat-label">Audio Files</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-num" id="statReels">—</span>
-        <span class="stat-label">Reels</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-num" id="statMembers">—</span>
-        <span class="stat-label">Members</span>
-      </div>
-    </div>
-    <a href="{{ url_for('login') }}" class="hero-btn">Get Access →</a>
-  </div>
+ <div class="hero-welcome">
+ <div class="hero-tag">Broadcasting Live</div>
+ <h1 class="hero-title">Share <span class="accent">Still</span><br>Listen.<br>Watch.</h1>
+ <p class="hero-desc">A curated space for audio messages, video reels, and community connection — delivered through your favourite platforms.</p>
+ <div class="hero-stats">
+ <div class="stat-item">
+ <span class="stat-num" id="statClips">—</span>
+ <span class="stat-label">Audio Files</span>
+ </div>
+ <div class="stat-item">
+ <span class="stat-num" id="statReels">—</span>
+ <span class="stat-label">Reels</span>
+ </div>
+ <div class="stat-item">
+ <span class="stat-num" id="statMembers">—</span>
+ <span class="stat-label">Members</span>
+ </div>
+ </div>
+ <a href="{{ url_for('login') }}" class="hero-btn">Get Access →</a>
+ </div>
 
-  <div class="hero-slots">
-    <div class="slot-panel">
-      <div class="slot-header">
-        <span class="slot-title">What's Inside</span>
-        <span class="slot-badge">Always On</span>
-      </div>
-      <div class="feature-grid">
-        <div class="feature-card">
-          <div class="corner-mark"></div>
-          <span class="feature-icon">🎙️</span>
-          <div class="feature-name">Audio Sermons</div>
-          <div class="feature-desc">Full-length audio messages you can stream or download anytime.</div>
-        </div>
-        <div class="feature-card">
-          <div class="corner-mark"></div>
-          <span class="feature-icon">🎞️</span>
-          <div class="feature-name">Video Reels</div>
-          <div class="feature-desc">Short, shareable reels — highlight moments worth rewatching.</div>
-        </div>
-        <div class="feature-card">
-          <div class="corner-mark"></div>
-          <span class="feature-icon">📡</span>
-          <div class="feature-name">Telegram Delivery</div>
-          <div class="feature-desc">Get fresh content pushed directly to your Telegram channel.</div>
-        </div>
-        <div class="feature-card">
-          <div class="corner-mark"></div>
-          <span class="feature-icon">📲</span>
-          <div class="feature-name">Dashboard Access</div>
-          <div class="feature-desc">Web dashboard to manage preferences and browse the archive.</div>
-        </div>
-      </div>
-    </div>
+ <div class="hero-slots">
+ <div class="slot-panel">
+ <div class="slot-header">
+ <span class="slot-title">What's Inside</span>
+ <span class="slot-badge">Always On</span>
+ </div>
+ <div class="feature-grid">
+ <div class="feature-card">
+ <div class="corner-mark"></div>
+ <span class="feature-icon"></span>
+ <div class="feature-name">Audio Sermons</div>
+ <div class="feature-desc">Full-length audio messages you can stream or download anytime.</div>
+ </div>
+ <div class="feature-card">
+ <div class="corner-mark"></div>
+ <span class="feature-icon"></span>
+ <div class="feature-name">Video Reels</div>
+ <div class="feature-desc">Short, shareable reels — highlight moments worth rewatching.</div>
+ </div>
+ <div class="feature-card">
+ <div class="corner-mark"></div>
+ <span class="feature-icon"></span>
+ <div class="feature-name">Telegram Delivery</div>
+ <div class="feature-desc">Get fresh content pushed directly to your Telegram channel.</div>
+ </div>
+ <div class="feature-card">
+ <div class="corner-mark"></div>
+ <span class="feature-icon"></span>
+ <div class="feature-name">Dashboard Access</div>
+ <div class="feature-desc">Web dashboard to manage preferences and browse the archive.</div>
+ </div>
+ </div>
+ </div>
 
-    <div class="slot-panel">
-      <div class="slot-header">
-        <span class="slot-title">Why Share Still</span>
-        <span class="slot-badge">Live</span>
-      </div>
-      <div class="community-items">
-        <div class="community-item">
-          <div class="comm-avatar">📬</div>
-          <div class="comm-info">
-            <div class="comm-name">Instant Delivery</div>
-            <div class="comm-sub">Content arrives as soon as it's released</div>
-          </div>
-        </div>
-        <div class="community-item">
-          <div class="comm-avatar">🎯</div>
-          <div class="comm-info">
-            <div class="comm-name">Curated Content</div>
-            <div class="comm-sub">Hand-picked messages designed to inspire</div>
-          </div>
-        </div>
-        <div class="community-item">
-          <div class="comm-avatar">🔓</div>
-          <div class="comm-info">
-            <div class="comm-name">Free Access</div>
-            <div class="comm-sub">No cost, no spam, unsubscribe anytime</div>
-          </div>
-        </div>
-        <div class="community-item">
-          <div class="comm-avatar">🌐</div>
-          <div class="comm-info">
-            <div class="comm-name">Multi-Platform</div>
-            <div class="comm-sub">Telegram, WhatsApp, Email — you choose</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+ <div class="slot-panel">
+ <div class="slot-header">
+ <span class="slot-title">Why Share Still</span>
+ <span class="slot-badge">Live</span>
+ </div>
+ <div class="community-items">
+ <div class="community-item">
+ <div class="comm-avatar"></div>
+ <div class="comm-info">
+ <div class="comm-name">Instant Delivery</div>
+ <div class="comm-sub">Content arrives as soon as it's released</div>
+ </div>
+ </div>
+ <div class="community-item">
+ <div class="comm-avatar"></div>
+ <div class="comm-info">
+ <div class="comm-name">Curated Content</div>
+ <div class="comm-sub">Hand-picked messages designed to inspire</div>
+ </div>
+ </div>
+ <div class="community-item">
+ <div class="comm-avatar"></div>
+ <div class="comm-info">
+ <div class="comm-name">Free Access</div>
+ <div class="comm-sub">No cost, no spam, unsubscribe anytime</div>
+ </div>
+ </div>
+ <div class="community-item">
+ <div class="comm-avatar"></div>
+ <div class="comm-info">
+ <div class="comm-name">Multi-Platform</div>
+ <div class="comm-sub">Telegram, WhatsApp, Email — you choose</div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
 </div>
 
 <div class="ticker-wrap">
-  <div class="ticker-inner">
-    <span>New Audio Drops Weekly</span>
-    <span>★</span>
-    <span>Video Reels Every Friday</span>
-    <span>★</span>
-    <span>Join the Community</span>
-    <span>★</span>
-    <span>Share Still · Abide Always</span>
-    <span>★</span>
-    <span>New Audio Drops Weekly</span>
-    <span>★</span>
-    <span>Video Reels Every Friday</span>
-    <span>★</span>
-    <span>Join the Community</span>
-    <span>★</span>
-    <span>Share Still · Abide Always</span>
-    <span>★</span>
-  </div>
+ <div class="ticker-inner">
+ <span>New Audio Drops Weekly</span>
+ <span></span>
+ <span>Video Reels Every Friday</span>
+ <span></span>
+ <span>Join the Community</span>
+ <span></span>
+ <span>Share Still · Abide Always</span>
+ <span></span>
+ <span>New Audio Drops Weekly</span>
+ <span></span>
+ <span>Video Reels Every Friday</span>
+ <span></span>
+ <span>Join the Community</span>
+ <span></span>
+ <span>Share Still · Abide Always</span>
+ <span></span>
+ </div>
 </div>
 
 <section id="audio">
-  <div class="section-header">
-    <div>
-      <div class="section-label">Listen</div>
-      <h2 class="section-title">Audio</h2>
-    </div>
-    <span class="section-count" id="audioCount">Loading...</span>
-  </div>
+ <div class="section-header">
+ <div>
+ <div class="section-label">Listen</div>
+ <h2 class="section-title">Audio</h2>
+ </div>
+ <span class="section-count" id="audioCount">Loading...</span>
+ </div>
 
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchAudioTab('sermons', this)">📖 Sermons</button>
-    <button class="tab-btn" onclick="switchAudioTab('prophecies', this)">🔥 Prophecies</button>
-  </div>
+ <div class="tabs">
+ <button class="tab-btn active" onclick="switchAudioTab('sermons', this)"> Sermons</button>
+ <button class="tab-btn" onclick="switchAudioTab('prophecies', this)"> Prophecies</button>
+ </div>
 
-  <div id="tab-sermons" class="tab-content active">
-    <div class="audio-list" id="sermonsList">
-      <div style="text-align:center;padding:40px;color:var(--muted);font-family:var(--font-mono);font-size:11px;letter-spacing:1px;">Loading latest episodes...</div>
-    </div>
-  </div>
+ <div id="tab-sermons" class="tab-content active">
+ <div class="audio-list" id="sermonsList">
+ <div style="text-align:center;padding:40px;color:var(--muted);font-family:var(--font-mono);font-size:11px;letter-spacing:1px;">Loading latest episodes...</div>
+ </div>
+ </div>
 
-  <div id="tab-prophecies" class="tab-content">
-    <div class="audio-list" id="propheciesList">
-      <div style="text-align:center;padding:40px;color:var(--muted);font-family:var(--font-mono);font-size:11px;letter-spacing:1px;">Loading prophecies...</div>
-    </div>
-  </div>
+ <div id="tab-prophecies" class="tab-content">
+ <div class="audio-list" id="propheciesList">
+ <div style="text-align:center;padding:40px;color:var(--muted);font-family:var(--font-mono);font-size:11px;letter-spacing:1px;">Loading prophecies...</div>
+ </div>
+ </div>
 </section>
 
 <section id="reels" style="background:var(--panel);border-top:0.5px solid var(--border-soft);border-bottom:0.5px solid var(--border-soft);">
-  <div class="section-header">
-    <div>
-      <div class="section-label">Watch</div>
-      <h2 class="section-title">Instagram Reels</h2>
-    </div>
-    <span class="section-count">@pastorenochmoments</span>
-  </div>
+ <div class="section-header">
+ <div>
+ <div class="section-label">Watch</div>
+ <h2 class="section-title">Instagram Reels</h2>
+ </div>
+ <span class="section-count">@pastorenochmoments</span>
+ </div>
 
-  <div style="display:flex;align-items:center;gap:20px;margin-bottom:32px;padding:20px;background:var(--panel2);border:0.5px solid var(--border-soft);">
-    <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:28px;">📸</div>
-    <div style="flex:1;min-width:0;overflow:hidden;">
-      <div style="font-family:var(--font-display);font-size:24px;letter-spacing:0.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">pastorenochmoments</div>
-      <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;">Follow for faith-filled reels &amp; moments</div>
-    </div>
-    <a href="https://www.instagram.com/pastorenochmoments" target="_blank" style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);color:#fff;padding:10px 24px;text-decoration:none;flex-shrink:0;">Follow</a>
-  </div>
+ <div style="display:flex;align-items:center;gap:20px;margin-bottom:32px;padding:20px;background:var(--panel2);border:0.5px solid var(--border-soft);">
+ <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="#fff" stroke="none"/></svg></div>
+ <div style="flex:1;min-width:0;overflow:hidden;">
+ <div style="font-family:var(--font-display);font-size:24px;letter-spacing:0.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">pastorenochmoments</div>
+ <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;">Follow for faith-filled reels &amp; moments</div>
+ </div>
+ <a href="https://www.instagram.com/pastorenochmoments" target="_blank" style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);color:#fff;padding:10px 24px;text-decoration:none;flex-shrink:0;">Follow</a>
+ </div>
 
-  <div class="reels-scroll-wrap">
-    <div class="reels-row" id="instagramReels"></div>
-  </div>
+ <div class="reels-scroll-wrap">
+ <div class="reels-row" id="instagramReels"></div>
+ </div>
 </section>
 
 <section id="testimonies" style="background:var(--panel);border-bottom:0.5px solid var(--border-soft);">
-  <div class="section-header">
-    <div>
-      <div class="section-label">Share</div>
-      <h2 class="section-title">Testimonies</h2>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="submit-btn" style="width:auto;padding:8px 14px;font-size:9px;" onclick="document.getElementById('testimonyForm').style.display='block'">✍️ Share Yours</button>
-    </div>
-  </div>
+ <div class="section-header">
+ <div>
+ <div class="section-label">Share</div>
+ <h2 class="section-title">Testimonies</h2>
+ </div>
+ <div style="display:flex;gap:8px;">
+ <button class="submit-btn" style="width:auto;padding:8px 14px;font-size:9px;" onclick="document.getElementById('testimonyForm').style.display='block'"> Share Yours</button>
+ </div>
+ </div>
 
-  <div id="testimonyForm" style="display:none;max-width:600px;margin:0 auto 32px;background:var(--panel2);border:0.5px solid var(--border-soft);padding:24px;">
-    <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;color:var(--lime);text-transform:uppercase;margin-bottom:16px;">Submit Your Testimony</div>
-    <div class="field-group">
-      <label class="field-label">Your Name</label>
-      <input class="field-input" type="text" id="t-name" placeholder="Name (optional)" style="background:var(--panel);">
-    </div>
-    <div class="field-group">
-      <label class="field-label">Title</label>
-      <input class="field-input" type="text" id="t-title" placeholder="What God did" style="background:var(--panel);">
-    </div>
-    <div class="field-group">
-      <label class="field-label">Your Testimony</label>
-      <textarea class="field-input" id="t-content" rows="5" placeholder="Share what God has done..." style="background:var(--panel);resize:vertical;"></textarea>
-    </div>
-    <button class="submit-btn" onclick="submitTestimony()">Submit Testimony →</button>
-    <div id="t-msg" style="font-family:var(--font-mono);font-size:10px;margin-top:12px;"></div>
-  </div>
+ <div id="testimonyForm" style="display:none;max-width:600px;margin:0 auto 32px;background:var(--panel2);border:0.5px solid var(--border-soft);padding:24px;">
+ <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;color:var(--lime);text-transform:uppercase;margin-bottom:16px;">Submit Your Testimony</div>
+ <div class="field-group">
+ <label class="field-label">Your Name</label>
+ <input class="field-input" type="text" id="t-name" placeholder="Name (optional)" style="background:var(--panel);">
+ </div>
+ <div class="field-group">
+ <label class="field-label">Title</label>
+ <input class="field-input" type="text" id="t-title" placeholder="What God did" style="background:var(--panel);">
+ </div>
+ <div class="field-group">
+ <label class="field-label">Your Testimony</label>
+ <textarea class="field-input" id="t-content" rows="5" placeholder="Share what God has done..." style="background:var(--panel);resize:vertical;"></textarea>
+ </div>
+ <button class="submit-btn" onclick="submitTestimony()">Submit Testimony →</button>
+ <div id="t-msg" style="font-family:var(--font-mono);font-size:10px;margin-top:12px;"></div>
+ </div>
 
-  <div id="testimoniesList" style="max-width:700px;margin:0 auto;padding:0 20px 40px;">
-    <div style="text-align:center;padding:40px;color:var(--muted);font-family:var(--font-mono);font-size:11px;letter-spacing:1px;">Loading testimonies...</div>
-  </div>
+ <div id="testimoniesList" style="max-width:700px;margin:0 auto;padding:0 20px 40px;">
+ <div style="text-align:center;padding:40px;color:var(--muted);font-family:var(--font-mono);font-size:11px;letter-spacing:1px;">Loading testimonies...</div>
+ </div>
 </section>
 
 <section id="join" class="signup-section">
-  <div class="signup-grid">
-    <div class="signup-left">
-      <div class="section-label">Stay Connected</div>
-      <h2 class="signup-pitch">Don't Miss<br>a <span class="accent">Single</span><br>Moment.</h2>
-      <p class="signup-why">Sign up once and receive every new audio message, video reel, and update across your preferred platforms — no scrolling required.</p>
-      <div class="perks">
-        <div class="perk"><span class="perk-dot"></span> Instant Telegram notifications on new drops</div>
-        <div class="perk"><span class="perk-dot"></span> WhatsApp broadcast updates</div>
-        <div class="perk"><span class="perk-dot"></span> Weekly digest delivered to your email</div>
-        <div class="perk"><span class="perk-dot"></span> Early access to exclusive content</div>
-        <div class="perk"><span class="perk-dot"></span> 100% free, no spam ever</div>
-      </div>
-    </div>
+ <div class="signup-grid">
+ <div class="signup-left">
+ <div class="section-label">Stay Connected</div>
+ <h2 class="signup-pitch">Don't Miss<br>a <span class="accent">Single</span><br>Moment.</h2>
+ <p class="signup-why">Sign up once and receive every new audio message, video reel, and update across your preferred platforms — no scrolling required.</p>
+ <div class="perks">
+ <div class="perk"><span class="perk-dot"></span> Instant Telegram notifications on new drops</div>
+ <div class="perk"><span class="perk-dot"></span> WhatsApp broadcast updates</div>
+ <div class="perk"><span class="perk-dot"></span> Weekly digest delivered to your email</div>
+ <div class="perk"><span class="perk-dot"></span> Early access to exclusive content</div>
+ <div class="perk"><span class="perk-dot"></span> 100% free, no spam ever</div>
+ </div>
+ </div>
 
-    <div class="signup-form-wrap">
-      <div class="form-title">Get Started</div>
-      <div class="form-sub">Free · Instant Access</div>
-        <div class="field-group">
-          <label class="field-label">Email Address</label>
-          <input class="field-input" type="email" placeholder="you@example.com" id="landing-email">
-        </div>
-        <div class="field-group">
-          <label class="field-label">WhatsApp Number</label>
-          <div class="phone-input-group">
-            <select class="field-select" id="landing-country">
-              <option value="+234">🇳🇬 +234</option>
-              <option value="+1">🇺🇸 +1</option>
-              <option value="+44">🇬🇧 +44</option>
-              <option value="+233">🇬🇭 +233</option>
-              <option value="+254">🇰🇪 +254</option>
-              <option value="+256">🇺🇬 +256</option>
-              <option value="+255">🇹🇿 +255</option>
-              <option value="+27">🇿🇦 +27</option>
-              <option value="+91">🇮🇳 +91</option>
-              <option value="+971">🇦🇪 +971</option>
-              <option value="+966">🇸🇦 +966</option>
-              <option value="+20">🇪🇬 +20</option>
-              <option value="+212">🇲🇦 +212</option>
-              <option value="+229">🇧🇯 +229</option>
-              <option value="+225">🇨🇮 +225</option>
-              <option value="+221">🇸🇳 +221</option>
-              <option value="+237">🇨🇲 +237</option>
-              <option value="+233">🇬🇭 +233</option>
-              <option value="+234">🇳🇬 +234</option>
-              <option value="+245">🇬🇼 +245</option>
-              <option value="+249">🇸🇩 +249</option>
-              <option value="+250">🇷🇼 +250</option>
-              <option value="+260">🇿🇲 +260</option>
-              <option value="+263">🇿🇼 +263</option>
-              <option value="+265">🇲🇼 +265</option>
-              <option value="+267">🇧🇼 +267</option>
-              <option value="+351">🇵🇹 +351</option>
-              <option value="+49">🇩🇪 +49</option>
-              <option value="+33">🇫🇷 +33</option>
-              <option value="+39">🇮🇹 +39</option>
-              <option value="+34">🇪🇸 +34</option>
-              <option value="+31">🇳🇱 +31</option>
-              <option value="+46">🇸🇪 +46</option>
-              <option value="+47">🇳🇴 +47</option>
-              <option value="+61">🇦🇺 +61</option>
-              <option value="+55">🇧🇷 +55</option>
-              <option value="+52">🇲🇽 +52</option>
-              <option value="+54">🇦🇷 +54</option>
-            </select>
-            <input class="field-input" type="tel" placeholder="800 000 0000" id="landing-phone">
-          </div>
-          <div class="field-hint">Used for broadcast updates only. Your number stays private.</div>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Telegram Username</label>
-          <input class="field-input" type="text" placeholder="@yourusername" id="landing-telegram">
-          <div class="field-hint">Don't have one? Get it at t.me/userinfobot</div>
-        </div>
-      <a href="{{ url_for('login') }}" class="submit-btn">Create Account →</a>
-      <div class="form-footer">Already registered? <a href="{{ url_for('login') }}">Sign in</a></div>
-    </div>
-  </div>
+ <div class="signup-form-wrap">
+ <div class="form-title">Get Started</div>
+ <div class="form-sub">Free · Instant Access</div>
+ <div class="field-group">
+ <label class="field-label">Email Address</label>
+ <input class="field-input" type="email" placeholder="you@example.com" id="landing-email">
+ </div>
+ <div class="field-group">
+ <label class="field-label">WhatsApp Number</label>
+ <div class="phone-input-group">
+ <select class="field-select" id="landing-country">
+ <option value="+234">🇳🇬 +234</option>
+ <option value="+1">🇺🇸 +1</option>
+ <option value="+44">🇬🇧 +44</option>
+ <option value="+233">🇬🇭 +233</option>
+ <option value="+254">🇰🇪 +254</option>
+ <option value="+256">🇺🇬 +256</option>
+ <option value="+255">🇹🇿 +255</option>
+ <option value="+27">🇿🇦 +27</option>
+ <option value="+91">🇮🇳 +91</option>
+ <option value="+971">🇦🇪 +971</option>
+ <option value="+966">🇸🇦 +966</option>
+ <option value="+20">🇪🇬 +20</option>
+ <option value="+212">🇲🇦 +212</option>
+ <option value="+229">🇧🇯 +229</option>
+ <option value="+225">🇨🇮 +225</option>
+ <option value="+221">🇸🇳 +221</option>
+ <option value="+237">🇨🇲 +237</option>
+ <option value="+233">🇬🇭 +233</option>
+ <option value="+234">🇳🇬 +234</option>
+ <option value="+245">🇬🇼 +245</option>
+ <option value="+249">🇸🇩 +249</option>
+ <option value="+250">🇷🇼 +250</option>
+ <option value="+260">🇿🇲 +260</option>
+ <option value="+263">🇿🇼 +263</option>
+ <option value="+265">🇲🇼 +265</option>
+ <option value="+267">🇧🇼 +267</option>
+ <option value="+351">🇵🇹 +351</option>
+ <option value="+49">🇩🇪 +49</option>
+ <option value="+33">🇫🇷 +33</option>
+ <option value="+39">🇮🇹 +39</option>
+ <option value="+34">🇪🇸 +34</option>
+ <option value="+31">🇳🇱 +31</option>
+ <option value="+46">🇸🇪 +46</option>
+ <option value="+47">🇳🇴 +47</option>
+ <option value="+61">🇦🇺 +61</option>
+ <option value="+55">🇧🇷 +55</option>
+ <option value="+52">🇲🇽 +52</option>
+ <option value="+54">🇦🇷 +54</option>
+ </select>
+ <input class="field-input" type="tel" placeholder="800 000 0000" id="landing-phone">
+ </div>
+ <div class="field-hint">Used for broadcast updates only. Your number stays private.</div>
+ </div>
+ <div class="field-group">
+ <label class="field-label">Telegram Username</label>
+ <input class="field-input" type="text" placeholder="@yourusername" id="landing-telegram">
+ <div class="field-hint">Don't have one? Get it at t.me/userinfobot</div>
+ </div>
+ <a href="{{ url_for('login') }}" class="submit-btn">Create Account →</a>
+ <div class="form-footer">Already registered? <a href="{{ url_for('login') }}">Sign in</a></div>
+ </div>
+ </div>
 </section>
 
 <footer>
-  <div class="footer-logo">Share <span>Still</span></div>
-  <div class="footer-powered">Powered and hosted on <a href="https://paperlinkos.site">paperlinkos.site</a></div>
+ <div class="footer-logo">Share <span>Still</span></div>
+ <div class="footer-powered">Powered and hosted on <a href="https://paperlinkos.site">paperlinkos.site</a></div>
 </footer>
 
 <div class="player-bar" id="playerBar">
-  <div class="player-track-info">
-    <div class="player-track-name" id="playerName">—</div>
-    <div class="player-track-sub" id="playerSub">Share Still Audio</div>
-  </div>
-  <div class="player-controls">
-    <button class="ctrl-btn primary" id="playPauseBtn" onclick="togglePlay()">▶</button>
-  </div>
-  <div class="player-progress" id="player-progress-wrap">
-    <span class="progress-time" id="progressTime">0:00</span>
-    <div class="progress-bar" onclick="seekTrack(event, this)">
-      <div class="progress-fill" id="progressFill"></div>
-    </div>
-    <span class="progress-time" id="durationTime">0:00</span>
-  </div>
-  <div id="previewEndMsg" style="display:none;font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--lime);align-items:center;gap:12px;white-space:nowrap;">
-    <span>Preview ended</span>
-    <a id="spotifyLink" href="#" target="_blank" style="background:var(--lime);color:var(--black);padding:6px 14px;text-decoration:none;font-size:10px;letter-spacing:1px;">Full episode →</a>
-  </div>
-  <button onclick="closePlayer()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;flex-shrink:0;">✕</button>
+ <div class="player-track-info">
+ <div class="player-track-name" id="playerName">—</div>
+ <div class="player-track-sub" id="playerSub">Share Still Audio</div>
+ </div>
+ <div class="player-controls">
+ <button class="ctrl-btn primary" id="playPauseBtn" onclick="togglePlay()" style="font-size:9px;letter-spacing:2px;font-weight:500;">PLAY</button>
+ </div>
+ <div class="player-progress" id="player-progress-wrap">
+ <span class="progress-time" id="progressTime">0:00</span>
+ <div class="progress-bar" onclick="seekTrack(event, this)">
+ <div class="progress-fill" id="progressFill"></div>
+ </div>
+ <span class="progress-time" id="durationTime">0:00</span>
+ </div>
+ <div id="previewEndMsg" style="display:none;font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--lime);align-items:center;gap:12px;white-space:nowrap;">
+ <span>Preview ended</span>
+ <a id="spotifyLink" href="#" target="_blank" style="background:var(--lime);color:var(--black);padding:6px 14px;text-decoration:none;font-size:10px;letter-spacing:1px;">Full episode →</a>
+ </div>
+ <button onclick="closePlayer()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:10px;letter-spacing:1px;padding:4px 8px;flex-shrink:0;">CLOSE</button>
 </div>
 
 <script>
@@ -1467,258 +1467,258 @@ let progressInterval = null;
 let currentElapsed = 0;
 
 function switchAudioTab(name, btn) {
-  document.querySelectorAll('#audio .tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('#audio .tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  if (btn) btn.classList.add('active');
+ document.querySelectorAll('#audio .tab-content').forEach(t => t.classList.remove('active'));
+ document.querySelectorAll('#audio .tab-btn').forEach(b => b.classList.remove('active'));
+ document.getElementById('tab-' + name).classList.add('active');
+ if (btn) btn.classList.add('active');
 }
 
 function formatDuration(secStr) {
-  if (!secStr) return '—';
-  if (secStr.includes(':')) return secStr;
-  const s = parseInt(secStr);
-  if (isNaN(s)) return secStr;
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return m + ':' + (sec < 10 ? '0' : '') + sec;
+ if (!secStr) return '—';
+ if (secStr.includes(':')) return secStr;
+ const s = parseInt(secStr);
+ if (isNaN(s)) return secStr;
+ const m = Math.floor(s / 60);
+ const sec = s % 60;
+ return m + ':' + (sec < 10 ? '0' : '') + sec;
 }
 
 function timeAgo(dateStr) {
-  const d = new Date(dateStr);
-  const now = new Date();
-  const diff = Math.floor((now - d) / 86400000);
-  if (diff === 0) return 'Today';
-  if (diff === 1) return 'Yesterday';
-  if (diff < 7) return diff + 'd ago';
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+ const d = new Date(dateStr);
+ const now = new Date();
+ const diff = Math.floor((now - d) / 86400000);
+ if (diff === 0) return 'Today';
+ if (diff === 1) return 'Yesterday';
+ if (diff < 7) return diff + 'd ago';
+ return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 const PREVIEW_SEC = 150;
 
 function playAudio(title, audioUrl, sub, spotifyLink) {
-  if (currentAudioEl) { currentAudioEl.pause(); currentAudioEl = null; }
-  document.getElementById('previewEndMsg').style.display = 'none';
-  document.getElementById('player-progress-wrap').style.display = 'flex';
-  if (spotifyLink) document.getElementById('spotifyLink').href = spotifyLink;
+ if (currentAudioEl) { currentAudioEl.pause(); currentAudioEl = null; }
+ document.getElementById('previewEndMsg').style.display = 'none';
+ document.getElementById('player-progress-wrap').style.display = 'flex';
+ if (spotifyLink) document.getElementById('spotifyLink').href = spotifyLink;
 
-  currentAudioEl = new Audio(audioUrl);
-  currentAudioEl.play().catch(() => {});
-  document.getElementById('playerName').textContent = title;
-  document.getElementById('playerSub').textContent = sub || 'Pastor Enoch Podcast';
-  document.getElementById('playerBar').classList.add('visible');
-  document.getElementById('playPauseBtn').innerHTML = '⏸';
-  isPlaying = true;
-  currentElapsed = 0;
+ currentAudioEl = new Audio(audioUrl);
+ currentAudioEl.play().catch(() => {});
+ document.getElementById('playerName').textContent = title;
+ document.getElementById('playerSub').textContent = sub || 'Pastor Enoch Podcast';
+ document.getElementById('playerBar').classList.add('visible');
+ document.getElementById('playPauseBtn').innerHTML = 'PLAY';
+ isPlaying = true;
+ currentElapsed = 0;
 
-  currentAudioEl.addEventListener('loadedmetadata', () => {
-    const t = Math.min(currentAudioEl.duration, PREVIEW_SEC);
-    const m = Math.floor(t / 60), s = Math.floor(t % 60);
-    document.getElementById('durationTime').textContent = m + ':' + (s < 10 ? '0' : '') + s;
-  });
+ currentAudioEl.addEventListener('loadedmetadata', () => {
+ const t = Math.min(currentAudioEl.duration, PREVIEW_SEC);
+ const m = Math.floor(t / 60), s = Math.floor(t % 60);
+ document.getElementById('durationTime').textContent = m + ':' + (s < 10 ? '0' : '') + s;
+ });
 
-  currentAudioEl.addEventListener('timeupdate', () => {
-    if (!currentAudioEl) return;
-    if (currentAudioEl.currentTime >= PREVIEW_SEC) {
-      currentAudioEl.pause();
-      document.getElementById('playPauseBtn').innerHTML = '▶';
-      isPlaying = false;
-      document.getElementById('previewEndMsg').style.display = 'flex';
-      document.getElementById('player-progress-wrap').style.display = 'none';
-      return;
-    }
-    const pct = (currentAudioEl.currentTime / PREVIEW_SEC) * 100;
-    document.getElementById('progressFill').style.width = Math.min(pct, 100) + '%';
-    const m = Math.floor(currentAudioEl.currentTime / 60), s = Math.floor(currentAudioEl.currentTime % 60);
-    document.getElementById('progressTime').textContent = m + ':' + (s < 10 ? '0' : '') + s;
-  });
+ currentAudioEl.addEventListener('timeupdate', () => {
+ if (!currentAudioEl) return;
+ if (currentAudioEl.currentTime >= PREVIEW_SEC) {
+ currentAudioEl.pause();
+ document.getElementById('playPauseBtn').innerHTML = 'PLAY';
+ isPlaying = false;
+ document.getElementById('previewEndMsg').style.display = 'flex';
+ document.getElementById('player-progress-wrap').style.display = 'none';
+ return;
+ }
+ const pct = (currentAudioEl.currentTime / PREVIEW_SEC) * 100;
+ document.getElementById('progressFill').style.width = Math.min(pct, 100) + '%';
+ const m = Math.floor(currentAudioEl.currentTime / 60), s = Math.floor(currentAudioEl.currentTime % 60);
+ document.getElementById('progressTime').textContent = m + ':' + (s < 10 ? '0' : '') + s;
+ });
 
-  currentAudioEl.addEventListener('ended', () => {
-    document.getElementById('playPauseBtn').innerHTML = '▶';
-    isPlaying = false;
-    currentAudioEl = null;
-  });
+ currentAudioEl.addEventListener('ended', () => {
+ document.getElementById('playPauseBtn').innerHTML = 'PLAY';
+ isPlaying = false;
+ currentAudioEl = null;
+ });
 }
 
 function closePlayer() {
-  if (currentAudioEl) { currentAudioEl.pause(); currentAudioEl = null; }
-  document.getElementById('playerBar').classList.remove('visible');
-  document.getElementById('playPauseBtn').innerHTML = '▶';
-  document.getElementById('previewEndMsg').style.display = 'none';
-  document.getElementById('player-progress-wrap').style.display = 'flex';
-  isPlaying = false;
+ if (currentAudioEl) { currentAudioEl.pause(); currentAudioEl = null; }
+ document.getElementById('playerBar').classList.remove('visible');
+ document.getElementById('playPauseBtn').innerHTML = 'PLAY';
+ document.getElementById('previewEndMsg').style.display = 'none';
+ document.getElementById('player-progress-wrap').style.display = 'flex';
+ isPlaying = false;
 }
 
 function togglePlay() {
-  if (!currentAudioEl) return;
-  if (isPlaying) {
-    currentAudioEl.pause();
-    document.getElementById('playPauseBtn').innerHTML = '▶';
-  } else {
-    currentAudioEl.play();
-    document.getElementById('playPauseBtn').innerHTML = '⏸';
-  }
-  isPlaying = !isPlaying;
+ if (!currentAudioEl) return;
+ if (isPlaying) {
+ currentAudioEl.pause();
+ document.getElementById('playPauseBtn').innerHTML = 'PLAY';
+ } else {
+ currentAudioEl.play();
+ document.getElementById('playPauseBtn').innerHTML = 'PLAY';
+ }
+ isPlaying = !isPlaying;
 }
 
 function seekTrack(e, bar) {
-  if (!currentAudioEl) return;
-  const rect = bar.getBoundingClientRect();
-  const pct = (e.clientX - rect.left) / rect.width;
-  currentAudioEl.currentTime = pct * currentAudioEl.duration;
-  document.getElementById('progressFill').style.width = (pct * 100) + '%';
+ if (!currentAudioEl) return;
+ const rect = bar.getBoundingClientRect();
+ const pct = (e.clientX - rect.left) / rect.width;
+ currentAudioEl.currentTime = pct * currentAudioEl.duration;
+ document.getElementById('progressFill').style.width = (pct * 100) + '%';
 }
 
 // Load RSS Sermons
 (async function loadSermons() {
-  const list = document.getElementById('sermonsList');
-  try {
-    const r = await fetch('/api/rss');
-    if (!r.ok) throw new Error('Failed');
-    const items = await r.json();
-    if (!items.length) { list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎙️</div><div class="empty-state-text">No episodes yet</div></div>'; return; }
-    document.getElementById('audioCount').textContent = items.length + ' episodes';
-    list.innerHTML = items.map((ep, i) => `
-      <div class="audio-row" onclick="playAudio('${ep.title.replace(/'/g, "\\'")}', '${ep.audio_url}', '${ep.duration}', '${ep.link}')">
-        <div class="track-num">${String(i + 1).padStart(2, '0')}</div>
-        <div class="track-info">
-          <div class="track-name">${ep.title}</div>
-          <div class="track-meta">${timeAgo(ep.pub_date)} · ${formatDuration(ep.duration)}</div>
-        </div>
-        <span class="track-duration">${formatDuration(ep.duration)}</span>
-        <div class="track-actions">
-          <a href="${ep.link}" target="_blank" class="track-access" onclick="event.stopPropagation()" style="opacity:1;font-size:10px;text-decoration:none;">Spotify →</a>
-        </div>
-      </div>
-    `).join('');
-  } catch(e) {
-    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-family:var(--font-mono);font-size:11px;">Could not load episodes. <a href="https://podcasters.spotify.com/pod/show/ceyc" target="_blank" style="color:var(--lime);">Listen on Spotify →</a></div>';
-  }
+ const list = document.getElementById('sermonsList');
+ try {
+ const r = await fetch('/api/rss');
+ if (!r.ok) throw new Error('Failed');
+ const items = await r.json();
+ if (!items.length) { list.innerHTML = '<div class="empty-state"><div class="empty-state-text">No episodes yet</div></div>'; return; }
+ document.getElementById('audioCount').textContent = items.length + ' episodes';
+ list.innerHTML = items.map((ep, i) => `
+ <div class="audio-row" onclick="playAudio('${ep.title.replace(/'/g, "\\'")}', '${ep.audio_url}', '${ep.duration}', '${ep.link}')">
+ <div class="track-num">${String(i + 1).padStart(2, '0')}</div>
+ <div class="track-info">
+ <div class="track-name">${ep.title}</div>
+ <div class="track-meta">${timeAgo(ep.pub_date)} · ${formatDuration(ep.duration)}</div>
+ </div>
+ <span class="track-duration">${formatDuration(ep.duration)}</span>
+ <div class="track-actions">
+ <a href="${ep.link}" target="_blank" class="track-access" onclick="event.stopPropagation()" style="opacity:1;font-size:10px;text-decoration:none;">Spotify →</a>
+ </div>
+ </div>
+ `).join('');
+ } catch(e) {
+ list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-family:var(--font-mono);font-size:11px;">Could not load episodes. <a href="https://podcasters.spotify.com/pod/show/ceyc" target="_blank" style="color:var(--lime);">Listen on Spotify →</a></div>';
+ }
 })();
 
 // Load Prophecies
 (async function loadProphecies() {
-  const list = document.getElementById('propheciesList');
-  try {
-    const r = await fetch('/api/prophecies/recent');
-    if (!r.ok) throw new Error('Failed');
-    const clips = await r.json();
-    if (!clips.length) {
-      list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📜</div><div class="empty-state-text">No prophecies available yet</div></div>';
-      return;
-    }
-    list.innerHTML = clips.map(c => `
-      <div class="text-card" style="background:var(--panel);border:0.5px solid var(--border-soft);padding:20px;margin-bottom:10px;position:relative;">
-        <div style="position:absolute;top:10px;right:10px;width:6px;height:6px;background:var(--lime);opacity:0.4;"></div>
-        <div style="font-family:var(--font-display);font-size:20px;letter-spacing:0.5px;margin-bottom:6px;color:var(--lime);">${c.title}</div>
-        ${(c.month || c.program) ? '<div style="font-family:var(--font-mono);font-size:9px;color:var(--lime);letter-spacing:1px;margin-bottom:8px;text-transform:uppercase;">' + [c.month, c.program].filter(Boolean).join(' · ') + '</div>' : ''}
-        ${c.content_text ? '<div style="font-size:13px;color:var(--muted);line-height:1.75;white-space:pre-wrap;">' + c.content_text.slice(0, 300) + (c.content_text.length > 300 ? '...' : '') + '</div>' : ''}
-        <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:10px;letter-spacing:1px;">${(c.created_at || '').slice(0, 10)}${c.speaker ? ' · ' + c.speaker : ''}</div>
-      </div>
-    `).join('');
-  } catch(e) {
-    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-family:var(--font-mono);font-size:11px;">Sign in to see recent prophecies.</div>';
-  }
+ const list = document.getElementById('propheciesList');
+ try {
+ const r = await fetch('/api/prophecies/recent');
+ if (!r.ok) throw new Error('Failed');
+ const clips = await r.json();
+ if (!clips.length) {
+ list.innerHTML = '<div class="empty-state"><div class="empty-state-text">No prophecies available yet</div></div>';
+ return;
+ }
+ list.innerHTML = clips.map(c => `
+ <div class="text-card" style="background:var(--panel);border:0.5px solid var(--border-soft);padding:20px;margin-bottom:10px;position:relative;">
+ <div style="position:absolute;top:10px;right:10px;width:6px;height:6px;background:var(--lime);opacity:0.4;"></div>
+ <div style="font-family:var(--font-display);font-size:20px;letter-spacing:0.5px;margin-bottom:6px;color:var(--lime);">${c.title}</div>
+ ${(c.month || c.program) ? '<div style="font-family:var(--font-mono);font-size:9px;color:var(--lime);letter-spacing:1px;margin-bottom:8px;text-transform:uppercase;">' + [c.month, c.program].filter(Boolean).join(' · ') + '</div>' : ''}
+ ${c.content_text ? '<div style="font-size:13px;color:var(--muted);line-height:1.75;white-space:pre-wrap;">' + c.content_text.slice(0, 300) + (c.content_text.length > 300 ? '...' : '') + '</div>' : ''}
+ <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:10px;letter-spacing:1px;">${(c.created_at || '').slice(0, 10)}${c.speaker ? ' · ' + c.speaker : ''}</div>
+ </div>
+ `).join('');
+ } catch(e) {
+ list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-family:var(--font-mono);font-size:11px;">Sign in to see recent prophecies.</div>';
+ }
 })();
 
 // Load Testimonies
 (async function loadTestimonies() {
-  const list = document.getElementById('testimoniesList');
-  if (!list) return;
-  try {
-    const r = await fetch('/api/testimonies');
-    if (!r.ok) throw new Error('Failed');
-    const items = await r.json();
-    if (!items.length) {
-      list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🗣</div><div class="empty-state-text">No testimonies yet. Be the first to share!</div></div>';
-      return;
-    }
-    list.innerHTML = items.map(t => `
-      <div style="background:var(--panel);border:0.5px solid var(--border-soft);padding:20px;margin-bottom:10px;position:relative;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-          <div style="width:32px;height:32px;border-radius:50%;background:var(--lime);color:var(--black);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:12px;font-weight:700;flex-shrink:0;">${(t.user_name || 'A')[0].toUpperCase()}</div>
-          <div>
-            <div style="font-family:var(--font-display);font-size:15px;letter-spacing:0.5px;">${escHtml(t.title || 'Testimony')}</div>
-            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:1px;">${t.user_name || 'Anonymous'} · ${(t.created_at || '').slice(0, 10)}</div>
-          </div>
-        </div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.75;white-space:pre-wrap;padding-left:42px;">${escHtml(t.content.slice(0, 500))}${t.content.length > 500 ? '...' : ''}</div>
-      </div>
-    `).join('');
-  } catch(e) {
-    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-family:var(--font-mono);font-size:11px;">Could not load testimonies.</div>';
-  }
+ const list = document.getElementById('testimoniesList');
+ if (!list) return;
+ try {
+ const r = await fetch('/api/testimonies');
+ if (!r.ok) throw new Error('Failed');
+ const items = await r.json();
+ if (!items.length) {
+ list.innerHTML = '<div class="empty-state"><div class="empty-state-text">No testimonies yet. Be the first to share!</div></div>';
+ return;
+ }
+ list.innerHTML = items.map(t => `
+ <div style="background:var(--panel);border:0.5px solid var(--border-soft);padding:20px;margin-bottom:10px;position:relative;">
+ <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+ <div style="width:32px;height:32px;border-radius:50%;background:var(--lime);color:var(--black);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:12px;font-weight:700;flex-shrink:0;">${(t.user_name || 'A')[0].toUpperCase()}</div>
+ <div>
+ <div style="font-family:var(--font-display);font-size:15px;letter-spacing:0.5px;">${escHtml(t.title || 'Testimony')}</div>
+ <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:1px;">${t.user_name || 'Anonymous'} · ${(t.created_at || '').slice(0, 10)}</div>
+ </div>
+ </div>
+ <div style="font-size:13px;color:var(--muted);line-height:1.75;white-space:pre-wrap;padding-left:42px;">${escHtml(t.content.slice(0, 500))}${t.content.length > 500 ? '...' : ''}</div>
+ </div>
+ `).join('');
+ } catch(e) {
+ list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-family:var(--font-mono);font-size:11px;">Could not load testimonies.</div>';
+ }
 })();
 
 async function submitTestimony() {
-  const name = document.getElementById('t-name').value.trim();
-  const title = document.getElementById('t-title').value.trim();
-  const content = document.getElementById('t-content').value.trim();
-  const msg = document.getElementById('t-msg');
-  if (!content) { msg.textContent = 'Please write your testimony.'; msg.style.color = '#ff4444'; return; }
-  try {
-    const r = await fetch('/api/testimonies', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_name: name, title: title, content: content, source: 'web' })
-    });
-    if (r.ok) {
-      msg.textContent = '✓ Testimony submitted! It will appear once approved.';
-      msg.style.color = 'var(--lime)';
-      document.getElementById('t-name').value = '';
-      document.getElementById('t-title').value = '';
-      document.getElementById('t-content').value = '';
-    } else {
-      msg.textContent = 'Failed to submit. Try again.';
-      msg.style.color = '#ff4444';
-    }
-  } catch(e) {
-    msg.textContent = 'Network error.';
-    msg.style.color = '#ff4444';
-  }
+ const name = document.getElementById('t-name').value.trim();
+ const title = document.getElementById('t-title').value.trim();
+ const content = document.getElementById('t-content').value.trim();
+ const msg = document.getElementById('t-msg');
+ if (!content) { msg.textContent = 'Please write your testimony.'; msg.style.color = '#ff4444'; return; }
+ try {
+ const r = await fetch('/api/testimonies', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ user_name: name, title: title, content: content, source: 'web' })
+ });
+ if (r.ok) {
+ msg.textContent = ' Testimony submitted! It will appear once approved.';
+ msg.style.color = 'var(--lime)';
+ document.getElementById('t-name').value = '';
+ document.getElementById('t-title').value = '';
+ document.getElementById('t-content').value = '';
+ } else {
+ msg.textContent = 'Failed to submit. Try again.';
+ msg.style.color = '#ff4444';
+ }
+ } catch(e) {
+ msg.textContent = 'Network error.';
+ msg.style.color = '#ff4444';
+ }
 }
 
 function escHtml(s) {
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
+ const d = document.createElement('div');
+ d.textContent = s;
+ return d.innerHTML;
 }
 
 (async function loadStats() {
-  try {
-    const r = await fetch('/api/stats');
-    const d = await r.json();
-    if (d.subscribers !== undefined) document.getElementById('statMembers').textContent = d.subscribers;
-    if (d.clips !== undefined) document.getElementById('statClips').textContent = d.clips;
-  } catch(e) {}
+ try {
+ const r = await fetch('/api/stats');
+ const d = await r.json();
+ if (d.subscribers !== undefined) document.getElementById('statMembers').textContent = d.subscribers;
+ if (d.clips !== undefined) document.getElementById('statClips').textContent = d.clips;
+ } catch(e) {}
 })();
 
 // Load Instagram Reels
 (async function loadReels() {
-  const container = document.getElementById('instagramReels');
-  try {
-    const r = await fetch('/api/reels');
-    if (!r.ok) throw new Error('Failed');
-    const reels = await r.json();
-    if (!reels.length) { container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon">📸</div><div class="empty-state-text">No reels available</div></div>'; return; }
-    container.innerHTML = reels.map((reel, i) => `
-      <div class="reel-card">
-        <div class="reel-stripe"></div>
-        <div class="reel-thumb" style="background:${['linear-gradient(135deg,#833ab4,#fd1d1d)','linear-gradient(135deg,#fd1d1d,#fcb045)','linear-gradient(135deg,#fcb045,#833ab4)','linear-gradient(135deg,#833ab4,#fcb045)','linear-gradient(135deg,#fd1d1d,#833ab4)'][i%5]};${reel.thumbnail_url ? `background-image:url('${reel.thumbnail_url}');background-size:cover;background-position:center;` : ''}">
-          ${reel.thumbnail_url ? '' : '<div class="reel-thumb-bg" style="font-size:32px;">▶️</div>'}
-          <div class="reel-play" style="border-color:rgba(255,255,255,0.9);"><svg viewBox="0 0 12 14"><polygon points="0,0 12,7 0,14"/></svg></div>
-          <span class="reel-duration">Reel</span>
-          <span class="reel-views">${reel.thumbnail_url ? '' : 'Instagram'}</span>
-        </div>
-        <div class="reel-info">
-          <div class="reel-title">${reel.title ? (reel.title.length > 60 ? reel.title.slice(0,60)+'...' : reel.title) : 'Latest from Instagram'}</div>
-          <div class="reel-tag">@${reel.author_name || 'pastorenochmoments'}</div>
-        </div>
-        <a href="${reel.url}" target="_blank" rel="noopener" style="position:absolute;inset:0;z-index:2;"></a>
-      </div>
-    `).join('');
-  } catch(e) {
-    container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon">📸</div><div class="empty-state-text">Could not load reels. <a href="https://www.instagram.com/pastorenochmoments" target="_blank" style="color:var(--lime);">View on Instagram →</a></div></div>';
-  }
+ const container = document.getElementById('instagramReels');
+ try {
+ const r = await fetch('/api/reels');
+ if (!r.ok) throw new Error('Failed');
+ const reels = await r.json();
+ if (!reels.length) { container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-text">No reels available</div></div>'; return; }
+ container.innerHTML = reels.map((reel, i) => `
+ <div class="reel-card">
+ <div class="reel-stripe"></div>
+ <div class="reel-thumb" style="background:${['linear-gradient(135deg,#833ab4,#fd1d1d)','linear-gradient(135deg,#fd1d1d,#fcb045)','linear-gradient(135deg,#fcb045,#833ab4)','linear-gradient(135deg,#833ab4,#fcb045)','linear-gradient(135deg,#fd1d1d,#833ab4)'][i%5]};${reel.thumbnail_url ? `background-image:url('${reel.thumbnail_url}');background-size:cover;background-position:center;` : ''}">
+ ${reel.thumbnail_url ? '' : '<div class="reel-thumb-bg" style="font-size:32px;"></div>'}
+ <div class="reel-play" style="border-color:rgba(255,255,255,0.9);"><svg viewBox="0 0 12 14"><polygon points="0,0 12,7 0,14"/></svg></div>
+ <span class="reel-duration">Reel</span>
+ <span class="reel-views">${reel.thumbnail_url ? '' : 'Instagram'}</span>
+ </div>
+ <div class="reel-info">
+ <div class="reel-title">${reel.title ? (reel.title.length > 60 ? reel.title.slice(0,60)+'...' : reel.title) : 'Latest from Instagram'}</div>
+ <div class="reel-tag">@${reel.author_name || 'pastorenochmoments'}</div>
+ </div>
+ <a href="${reel.url}" target="_blank" rel="noopener" style="position:absolute;inset:0;z-index:2;"></a>
+ </div>
+ `).join('');
+ } catch(e) {
+ container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-text">Could not load reels. <a href="https://www.instagram.com/pastorenochmoments" target="_blank" style="color:var(--lime);">View on Instagram →</a></div></div>';
+ }
 })();
 </script>
 </body>
