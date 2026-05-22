@@ -1,0 +1,525 @@
+{% extends "base.html" %}
+{% block title %}Admin — Share Still{% endblock %}
+{% block content %}
+<section>
+  <div class="section-header">
+    <div>
+      <div class="section-label">Admin</div>
+      <h2 class="section-title">Prophecy Manager</h2>
+    </div>
+    <span class="section-count fade-up">{{ clips|length }} total clips</span>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="flash-msg {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card fade-up"><div class="stat-label">Subscribers</div><div class="stat-number">{{ stats.subscribers }}</div></div>
+    <div class="stat-card fade-up"><div class="stat-label">Total Clips</div><div class="stat-number">{{ stats.clips }}</div></div>
+    <div class="stat-card fade-up"><div class="stat-label">Broadcasts Sent</div><div class="stat-number">{{ stats.broadcast }}</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('create', this)">➕ New Clip</button>
+    <button class="tab-btn" onclick="switchTab('clips', this)">📋 Prophecies</button>
+    <button class="tab-btn" onclick="switchTab('telegram', this)">📡 Telegram Clips</button>
+    <button class="tab-btn" onclick="switchTab('users', this)">👥 Users</button>
+    <button class="tab-btn" onclick="switchTab('delivery', this)">📜 Delivery Log</button>
+    <button class="tab-btn" onclick="switchTab('testimonies', this);loadTestimonies('pending')">🗣 Testimonies</button>
+  </div>
+
+  <!-- Create Clip -->
+  <div id="tab-create" class="tab-content active">
+    <div class="signup-form-wrap" style="max-width:700px;margin:0 auto;">
+      <div class="form-title">Create Prophecy Clip</div>
+      <div class="form-sub">Add written prophecy, audio, or video content</div>
+      <form method="POST" action="{{ url_for('admin_create_clip') }}" enctype="multipart/form-data">
+        <div class="field-group">
+          <label class="field-label" for="title">Title <span style="color:var(--lime);">*</span></label>
+          <input class="field-input" type="text" id="title" name="title" placeholder="e.g. The Season of Breakthrough" required>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="month">Month</label>
+          <input class="field-input" type="text" id="month" name="month" placeholder="e.g. January 2026">
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="field-group">
+            <label class="field-label" for="program">Program</label>
+            <input class="field-input" type="text" id="program" name="program" placeholder="e.g. Thy Kingdom Come">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="series">Series</label>
+            <input class="field-input" type="text" id="series" name="series" placeholder="e.g. 8 Days of Blessings">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+          <div class="field-group">
+            <label class="field-label" for="speaker">Speaker</label>
+            <input class="field-input" type="text" id="speaker" name="speaker" placeholder="e.g. Pastor Enoch">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="service_date">Service Date</label>
+            <input class="field-input" type="date" id="service_date" name="service_date">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="tags">Tags</label>
+            <input class="field-input" type="text" id="tags" name="tags" placeholder="faith, breakthrough, prayer">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="content_text">Written Prophecy</label>
+          <textarea class="admin-textarea" id="content_text" name="content_text" placeholder="Paste the prophecy text here..." style="min-height:120px;"></textarea>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+          <input type="checkbox" id="is_featured" name="is_featured" value="1" style="accent-color:var(--lime);">
+          <label for="is_featured" style="font-size:12px;color:var(--text);cursor:pointer;">Feature on homepage</label>
+        </div>
+
+        <button type="submit" class="submit-btn">Create Clip →</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Prophecy Clips -->
+  <div id="tab-clips" class="tab-content">
+    {% if clips %}
+      <div style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;">
+        <input type="text" id="clipSearch" placeholder="Search..." class="field-input" style="flex:1;min-width:160px;padding:8px 12px;font-size:12px;">
+        <select id="programFilter" class="field-input" style="width:auto;min-width:120px;padding:8px 12px;font-size:12px;">
+          <option value="">All Programs</option>
+          {% for p in programs %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+        </select>
+      </div>
+      <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead>
+          <tr><th>ID</th><th>Title</th><th>Program</th><th>Type</th><th>Status</th><th>Date</th><th>Send</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for clip in clips %}
+            <tr class="clip-row" data-title="{{ clip.title }}" data-program="{{ clip.program }}">
+              <td style="font-family:var(--font-mono);font-size:12px;">#{{ clip.id }}</td>
+              <td style="color:var(--text);font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ clip.title }}">
+                {{ clip.title }}{% if clip.is_featured %} <span style="color:var(--lime);font-size:9px;">★</span>{% endif %}
+              </td>
+              <td style="font-size:11px;">{% if clip.program %}{{ clip.program }}{% else %}—{% endif %}</td>
+              <td>{% if clip.content_text %}📜{% endif %}{% if clip.audio_file_id or clip.audio_url %}🎙️{% endif %}{% if clip.video_file_id or clip.video_url %}🎞️{% endif %}{% if not clip.content_text and not clip.audio_file_id and not clip.audio_url and not clip.video_file_id and not clip.video_url %}—{% endif %}</td>
+              <td>{% if clip.is_active %}<span class="badge badge-active">Active</span>{% else %}<span class="badge badge-inactive">Inactive</span>{% endif %}</td>
+              <td style="font-family:var(--font-mono);font-size:11px;">{{ clip.created_at[:10] }}</td>
+              <td>
+                <button class="submit-btn" style="width:auto;padding:6px 14px;font-size:9px;" onclick="openProphecySendModal({{ clip.id }}, this)" data-title="{{ clip.title }}">
+                  📤 Send
+                </button>
+              </td>
+              <td style="white-space:nowrap;">
+                <form method="POST" action="{{ url_for('admin_toggle_clip') }}" style="display:inline;">
+                  <input type="hidden" name="clip_id" value="{{ clip.id }}">
+                  <input type="hidden" name="is_active" value="{{ '0' if clip.is_active else '1' }}">
+                  <button type="submit" style="background:none;border:none;color:var(--lime);cursor:pointer;font-family:var(--font-mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-left:6px;">{{ 'Deactivate' if clip.is_active else 'Activate' }}</button>
+                </form>
+                <form method="POST" action="{{ url_for('admin_delete_clip') }}" style="display:inline;" onsubmit="return confirm('Delete this clip?')">
+                  <input type="hidden" name="clip_id" value="{{ clip.id }}">
+                  <button type="submit" style="background:none;border:none;color:#ff4444;cursor:pointer;font-family:var(--font-mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-left:6px;">Delete</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </div>
+      <script>
+        document.getElementById('clipSearch')?.addEventListener('input', filterClips);
+        document.getElementById('programFilter')?.addEventListener('change', filterClips);
+        function filterClips() {
+          const q = (document.getElementById('clipSearch')?.value || '').toLowerCase();
+          const p = document.getElementById('programFilter')?.value || '';
+          document.querySelectorAll('.clip-row').forEach(row => {
+            const matchTitle = !q || row.dataset.title.toLowerCase().includes(q);
+            const matchProg = !p || row.dataset.program === p;
+            row.style.display = (matchTitle && matchProg) ? '' : 'none';
+          });
+        }
+
+      </script>
+    {% else %}
+      <div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">No clips yet — create one</div></div>
+    {% endif %}
+  </div>
+
+  <!-- Telegram Clips (from old dashboard) -->
+  <div id="tab-telegram" class="tab-content">
+    <div class="section-label" style="margin-bottom:16px;">Broadcast Manager</div>
+    {% if telegram_clips %}
+      <table class="data-table">
+        <thead>
+          <tr><th>ID</th><th>Title</th><th>Format</th><th>Created</th><th>Status</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          {% for c in telegram_clips %}
+            <tr>
+              <td style="font-family:var(--font-mono);font-size:12px;">#{{ c.id }}</td>
+              <td style="color:var(--text);font-weight:500;">{{ c.title or 'Untitled' }}</td>
+              <td><span class="badge badge-active" style="text-transform:uppercase;">{{ c.fmt }}</span></td>
+              <td style="font-family:var(--font-mono);font-size:11px;">{{ (c.created_at or '')[:16].replace('T',' ') }}</td>
+              <td>{% if c.broadcast %}<span style="font-family:var(--font-mono);font-size:10px;color:var(--lime);">● SENT</span>{% else %}<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">○ PENDING</span>{% endif %}</td>
+              <td>
+                <button class="submit-btn" style="width:auto;padding:8px 20px;font-size:10px;" onclick="openBroadcastModal({{ c.id }}, this)" data-title="{{ c.title or '' }}" {% if c.broadcast %}disabled style="width:auto;padding:8px 20px;font-size:10px;background:var(--panel);color:var(--muted);cursor:not-allowed;"{% endif %}>
+                  {{ 'SENT' if c.broadcast else 'BROADCAST' }}
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state"><div class="empty-state-icon">📡</div><div class="empty-state-text">No Telegram clips yet</div></div>
+    {% endif %}
+  </div>
+
+  <!-- Users -->
+  <div id="tab-users" class="tab-content">
+    <div style="margin-bottom:36px;">
+      <div class="section-label" style="margin-bottom:16px;">Dashboard Users</div>
+      {% if users %}
+        <table class="data-table">
+          <thead><tr><th>Email</th><th>Telegram ID</th><th>Delivery Time</th><th>Frequency</th><th>Timezone</th></tr></thead>
+          <tbody>
+            {% for u in users %}
+              <tr>
+                <td style="color:var(--text);font-weight:500;">{{ u.email }}</td>
+                <td style="font-family:var(--font-mono);font-size:12px;">{{ u.telegram_id or '—' }}</td>
+                <td>{{ u.delivery_time }}</td>
+                <td>{{ u.delivery_frequency }}</td>
+                <td>{{ u.timezone }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">No users registered yet</div></div>
+      {% endif %}
+    </div>
+    <div>
+      <div class="section-label" style="margin-bottom:16px;" id="sub-label">Telegram Subscribers ({{ subscribers|length }})</div>
+      {% if subscribers %}
+        <div class="sub-list" id="sub-list" style="max-height:320px;overflow-y:auto;">
+          {% for s in subscribers %}
+            <div class="log-item" style="margin-bottom:4px;">
+              <span class="log-title">{{ s.username or 'unknown' }}</span>
+              <span class="log-meta">Chat #{{ s.chat_id }} · {{ (s.joined_at or '')[:10] }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state"><div class="empty-state-text">No Telegram subscribers</div></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Delivery Log -->
+  <div id="tab-delivery" class="tab-content">
+    {% if logs %}
+      <table class="data-table">
+        <thead><tr><th>Title</th><th>User</th><th>Method</th><th>Delivered At</th></tr></thead>
+        <tbody>
+          {% for log in logs %}
+            <tr>
+              <td style="color:var(--text);font-weight:500;">{{ log.title }}</td>
+              <td>{{ log.email }}</td>
+              <td><span class="badge badge-active">{{ log.method }}</span></td>
+              <td style="font-family:var(--font-mono);font-size:11px;">{{ log.delivered_at[:16] }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state"><div class="empty-state-icon">📡</div><div class="empty-state-text">No deliveries yet</div></div>
+    {% endif %}
+  </div>
+
+  <!-- Testimonies Tab -->
+  <div id="tab-testimonies" class="tab-content">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div>
+        <div class="form-title">Testimonies</div>
+        <div class="form-sub">Review and manage user-submitted testimonies</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="submit-btn" style="width:auto;padding:8px 16px;font-size:9px;" onclick="loadTestimonies('pending')">⏳ Pending</button>
+        <button class="submit-btn" style="width:auto;padding:8px 16px;font-size:9px;" onclick="loadTestimonies('approved')">✅ Approved</button>
+        <button class="submit-btn" style="width:auto;padding:8px 16px;font-size:9px;" onclick="loadTestimonies('rejected')">❌ Rejected</button>
+        <button class="submit-btn" style="width:auto;padding:8px 16px;font-size:9px;" onclick="loadTestimonies('')">📋 All</button>
+      </div>
+    </div>
+    <div id="testimoniesContainer">
+      <div class="empty-state"><div class="empty-state-icon">🗣</div><div class="empty-state-text">Loading testimonies...</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Broadcast Recipient Modal -->
+<div id="broadcastModal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;">
+  <div style="background:var(--panel);border:0.5px solid var(--border);width:90%;max-width:500px;max-height:80vh;display:flex;flex-direction:column;">
+    <div style="padding:20px;border-bottom:0.5px solid var(--border-soft);display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;color:var(--lime);text-transform:uppercase;">Select Recipients</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="modalClipTitle">—</div>
+      </div>
+      <button onclick="closeModal()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;">✕</button>
+    </div>
+    <div style="padding:12px 20px;border-bottom:0.5px solid var(--border-soft);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;">
+        <input type="checkbox" id="selectAllSubs" onchange="toggleAllSubs(this)" style="accent-color:var(--lime);" checked>
+        Select all
+      </label>
+      <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);" id="selectedCount">0 selected</span>
+      <input type="text" id="subSearch" placeholder="Search..." oninput="filterSubs()" style="flex:1;min-width:120px;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--text);padding:6px 10px;font-family:var(--font-mono);font-size:10px;outline:none;">
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:8px 0;" id="subListContainer">
+      {% for s in subscribers %}
+        <label class="sub-check-row" data-name="{{ s.username or '' }}" data-id="{{ s.chat_id }}" style="display:flex;align-items:center;gap:10px;padding:8px 20px;cursor:pointer;transition:background 0.15s;">
+          <input type="checkbox" class="sub-cb" value="{{ s.chat_id }}" checked style="accent-color:var(--lime);">
+          <span style="font-size:12px;flex:1;">{{ s.username or 'unknown' }}</span>
+          <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);">#{{ s.chat_id }}</span>
+        </label>
+      {% endfor %}
+    </div>
+    <div style="padding:16px 20px;border-top:0.5px solid var(--border-soft);display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeModal()" style="background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);padding:8px 20px;cursor:pointer;font-family:var(--font-mono);font-size:10px;letter-spacing:1px;">Cancel</button>
+      <button id="modalSendBtn" onclick="confirmBroadcast()" style="background:var(--lime);border:none;color:var(--black);padding:8px 24px;cursor:pointer;font-family:var(--font-mono);font-size:10px;letter-spacing:1px;font-weight:500;">Send to <span id="modalSendCount">0</span></button>
+    </div>
+  </div>
+</div>
+
+<style>
+.sub-check-row:hover { background: rgba(204,255,0,0.04); }
+.sub-check-row:has(input:checked) { background: rgba(204,255,0,0.06); }
+</style>
+
+<script>
+let pendingClipId = null;
+let pendingBtn = null;
+let pendingSendType = 'broadcast'; // 'broadcast' or 'send-prophecy'
+
+function openBroadcastModal(clipId, btn) {
+  pendingSendType = 'broadcast';
+  pendingClipId = clipId;
+  pendingBtn = btn;
+  const title = btn.dataset.title || 'Clip #' + clipId;
+  document.getElementById('modalClipTitle').textContent = title;
+  document.getElementById('broadcastModal').style.display = 'flex';
+  updateSelectedCount();
+}
+
+function openProphecySendModal(clipId, btn) {
+  pendingSendType = 'send-prophecy';
+  pendingClipId = clipId;
+  pendingBtn = btn;
+  const title = btn.dataset.title || 'Prophecy #' + clipId;
+  document.getElementById('modalClipTitle').textContent = title;
+  document.getElementById('broadcastModal').style.display = 'flex';
+  updateSelectedCount();
+}
+
+function closeModal() {
+  document.getElementById('broadcastModal').style.display = 'none';
+  pendingClipId = null;
+  pendingBtn = null;
+}
+
+function toggleAllSubs(el) {
+  document.querySelectorAll('.sub-cb').forEach(cb => cb.checked = el.checked);
+  updateSelectedCount();
+}
+
+function filterSubs() {
+  const q = document.getElementById('subSearch').value.toLowerCase();
+  document.querySelectorAll('.sub-check-row').forEach(row => {
+    row.style.display = row.dataset.name.toLowerCase().includes(q) || row.dataset.id.includes(q) ? '' : 'none';
+  });
+  updateSelectedCount();
+}
+
+function updateSelectedCount() {
+  const visible = document.querySelectorAll('.sub-check-row:not([style*=\"display:none\"])');
+  const checked = document.querySelectorAll('.sub-cb:checked').length;
+  document.getElementById('selectedCount').textContent = checked + ' selected';
+  document.getElementById('modalSendCount').textContent = checked;
+}
+
+document.querySelectorAll('.sub-cb').forEach(cb => cb.addEventListener('change', () => {
+  const all = document.querySelectorAll('.sub-cb');
+  const checked = document.querySelectorAll('.sub-cb:checked');
+  document.getElementById('selectAllSubs').checked = all.length === checked.length;
+  updateSelectedCount();
+}));
+
+async function confirmBroadcast() {
+  const checked = document.querySelectorAll('.sub-cb:checked');
+  if (!checked.length) { showToast('Select at least one recipient', true); return; }
+  const chatIds = Array.from(checked).map(cb => parseInt(cb.value));
+  const btn = pendingBtn;
+  const id = pendingClipId;
+  const type = pendingSendType;
+  closeModal();
+
+  const endpoint = type === 'send-prophecy' ? '/api/send-prophecy/' : '/api/broadcast/';
+  const btnLabel = type === 'send-prophecy' ? 'SEND' : 'BROADCAST';
+
+  btn.textContent = 'SENDING...';
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+  try {
+    const r = await fetch(endpoint + id, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_ids: chatIds })
+    });
+    const d = await r.json();
+    if (r.ok) {
+      btn.textContent = '✓ SENT';
+      btn.style.background = '#333';
+      btn.style.color = 'var(--lime)';
+      btn.style.cursor = 'default';
+      showToast('Sent to ' + d.success + ' recipients' + (d.failed ? ', ' + d.failed + ' failed' : ''));
+    } else {
+      btn.textContent = btnLabel;
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      showToast(d.error || 'Failed', true);
+    }
+  } catch(e) {
+    btn.textContent = btnLabel;
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    showToast('Network error', true);
+  }
+}
+
+async function loadTestimonies(status) {
+  const c = document.getElementById('testimoniesContainer');
+  c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🗣</div><div class="empty-state-text">Loading...</div></div>';
+  try {
+    let url = '/api/admin/testimonies';
+    if (status) url += '?status=' + status;
+    const r = await fetch(url);
+    const data = await r.json();
+    if (!data.length) {
+      c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🗣</div><div class="empty-state-text">No testimonies found</div></div>';
+      return;
+    }
+    let html = '<div style="display:flex;flex-direction:column;gap:12px;">';
+    data.forEach(t => {
+      const date = (t.created_at || '').slice(0, 10);
+      const badge = t.status === 'approved' ? 'badge-active' : t.status === 'rejected' ? 'badge-inactive' : 'badge-pending';
+      const canApprove = t.status === 'pending';
+      const canReject = t.status === 'pending';
+      const canDelete = true;
+      html += '<div data-id="' + t.id + '" style="background:var(--panel2);border:0.5px solid var(--border-soft);padding:16px;display:flex;gap:14px;align-items:flex-start;">';
+      html += '<div style="flex:1;">';
+      html += '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;">';
+      html += '<strong style="font-size:13px;">' + escHtml(t.title || 'Untitled') + '</strong>';
+      if (t.user_name) html += '<span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);">— ' + escHtml(t.user_name) + '</span>';
+      html += '<span class="badge ' + badge + '" style="margin-left:auto;">' + t.status + '</span>';
+      html += '</div>';
+      html += '<div style="font-size:11px;color:var(--muted);margin-bottom:6px;">' + escHtml(t.content).slice(0, 200) + (t.content.length > 200 ? '...' : '') + '</div>';
+      html += '<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);display:flex;gap:12px;">';
+      html += '<span>' + date + '</span>';
+      if (t.source) html += '<span>' + t.source + '</span>';
+      if (t.media_type) html += '<span>📎 ' + t.media_type + '</span>';
+      html += '</div></div>';
+      html += '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">';
+      if (canApprove) html += '<button class="submit-btn" style="width:auto;padding:6px 14px;font-size:9px;" onclick="approveTestimony(' + t.id + ')">✅ Approve</button>';
+      if (canReject) html += '<button class="submit-btn" style="width:auto;padding:6px 14px;font-size:9px;background:#442;border-color:#a33;" onclick="rejectTestimony(' + t.id + ')">❌ Reject</button>';
+      html += '<button class="submit-btn" style="width:auto;padding:6px 14px;font-size:9px;background:#442;border-color:#a33;" onclick="deleteTestimony(' + t.id + ')">🗑 Delete</button>';
+      html += '</div></div>';
+    });
+    html += '</div>';
+    c.innerHTML = html;
+  } catch(e) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">Error loading testimonies</div></div>';
+  }
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+async function approveTestimony(id) {
+  try {
+    const r = await fetch('/api/admin/testimonies/' + id + '/approve', { method: 'POST' });
+    if (r.ok) { loadTestimonies(); showToast('Testimony approved'); }
+    else showToast('Failed to approve', true);
+  } catch(e) { showToast('Network error', true); }
+}
+
+async function rejectTestimony(id) {
+  try {
+    const r = await fetch('/api/admin/testimonies/' + id + '/reject', { method: 'POST' });
+    if (r.ok) { loadTestimonies(); showToast('Testimony rejected'); }
+    else showToast('Failed to reject', true);
+  } catch(e) { showToast('Network error', true); }
+}
+
+async function deleteTestimony(id) {
+  if (!confirm('Delete this testimony?')) return;
+  try {
+    const r = await fetch('/api/admin/testimonies/' + id + '/delete', { method: 'POST' });
+    if (r.ok) { loadTestimonies(); showToast('Testimony deleted'); }
+    else showToast('Failed to delete', true);
+  } catch(e) { showToast('Network error', true); }
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  if (!t) {
+    const el = document.createElement('div');
+    el.id = 'toast';
+    el.style.cssText = 'position:fixed;bottom:32px;right:32px;background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--lime);padding:16px 20px;font-family:var(--font-mono);font-size:11px;z-index:999;max-width:360px;transform:translateY(100px);opacity:0;transition:all 0.3s ease;';
+    document.body.appendChild(el);
+    setTimeout(() => { el.textContent = msg; el.style.transform = 'translateY(0)'; el.style.opacity = '1'; if (isError) el.style.borderLeftColor = '#ff4444'; }, 100);
+    setTimeout(() => { el.style.transform = 'translateY(100px)'; el.style.opacity = '0'; }, 3500);
+  } else {
+    t.textContent = msg;
+    t.style.borderLeftColor = isError ? '#ff4444' : 'var(--lime)';
+    t.style.transform = 'translateY(0)';
+    t.style.opacity = '1';
+    setTimeout(() => { t.style.transform = 'translateY(100px)'; t.style.opacity = '0'; }, 3500);
+  }
+}
+
+async function refreshStats() {
+  try {
+    const r = await fetch('/api/stats');
+    const d = await r.json();
+    const cards = document.querySelectorAll('.stat-number');
+    if (cards.length >= 3) {
+      cards[0].textContent = d.subscribers;
+      cards[1].textContent = d.clips;
+      cards[2].textContent = d.broadcast;
+    }
+  } catch(e) {}
+}
+setInterval(refreshStats, 30000);
+</script>
+{% endblock %}

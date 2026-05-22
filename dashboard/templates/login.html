@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Sign In — Share Still{% endblock %}
+{% block content %}
+<section style="display:flex;align-items:flex-start;justify-content:center;min-height:calc(100vh - 130px);padding:40px;">
+  <div style="width:100%;max-width:900px;display:grid;grid-template-columns:1fr 1px 1fr;gap:40px;align-items:start;" class="login-grid">
+
+    <!-- Admin Login -->
+    <div class="signup-form-wrap fade-up" style="margin:0;">
+      <div class="form-title">Admin Access</div>
+      <div class="form-sub">Telegram User ID</div>
+      <form method="POST" action="{{ url_for('login') }}">
+        <div class="field-group">
+          <label class="field-label" for="admin_id">Admin ID</label>
+          <input class="field-input" type="text" id="admin_id" name="admin_id" placeholder="Your Telegram User ID">
+        </div>
+        <button type="submit" class="submit-btn">Access Dashboard →</button>
+        <div class="form-footer">Find your ID at <span style="color:var(--lime);">@userinfobot</span></div>
+      </form>
+    </div>
+
+    <!-- Divider -->
+    <div style="background:var(--border-soft);height:100%;min-height:200px;width:1px;" class="login-divider"></div>
+
+    <!-- User Login / Register -->
+    <div class="signup-form-wrap fade-up" style="margin:0;">
+      <div class="form-title">
+        {% if request.args.get('register') %}Create Account{% else %}Sign In{% endif %}
+      </div>
+      <div class="form-sub">
+        {% if request.args.get('register') %}Join the community{% else %}Welcome back{% endif %}
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash-msg {{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('login') }}">
+        <div class="field-group">
+          <label class="field-label" for="email">Email Address</label>
+          <input class="field-input" type="email" id="email" name="email" placeholder="you@example.com" required>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="password">Password</label>
+          <input class="field-input" type="password" id="password" name="password" placeholder="••••••••" required>
+        </div>
+
+        {% if request.args.get('register') %}
+          <input type="hidden" name="action" value="register">
+          <button type="submit" class="submit-btn">Create Account →</button>
+          <div class="form-footer">
+            Already have an account? <a href="{{ url_for('login') }}" style="color:var(--lime);text-decoration:none;">Sign in</a>
+          </div>
+        {% else %}
+          <input type="hidden" name="action" value="login">
+          <button type="submit" class="submit-btn">Sign In →</button>
+          <div class="form-footer">
+            No account? <a href="{{ url_for('login') }}?register=1" style="color:var(--lime);text-decoration:none;">Create one</a>
+          </div>
+        {% endif %}
+      </form>
+    </div>
+
+  </div>
+</section>
+
+<style>
+@media (max-width: 768px) {
+  .login-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  .login-divider {
+    display: none !important;
+  }
+  section[style*="padding:40px"] {
+    padding: 20px 12px !important;
+  }
+}
+</style>
+{% endblock %}

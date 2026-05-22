@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Subscribe — Share Still{% endblock %}
+{% block content %}
+<section style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 240px);padding:40px;">
+  <div class="fade-up" style="text-align:center;max-width:520px;">
+
+    <div style="font-size:64px;margin-bottom:16px;opacity:0.3;">📡</div>
+
+    <h2 class="section-title" style="margin-bottom:12px;">Stay in the <span style="color:var(--lime);">Loop</span></h2>
+
+    <p style="font-size:15px;color:var(--muted);margin-bottom:36px;line-height:1.7;">
+      Get audio and video clips delivered straight to your Telegram<br>
+      the moment they're released.
+    </p>
+
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <a href="https://t.me/sharestillbot" target="_blank" class="submit-btn" style="width:auto;padding:14px 32px;text-decoration:none;">
+        Open on Telegram →
+      </a>
+      <a href="{{ url_for('login') }}" class="submit-btn" style="width:auto;padding:14px 32px;text-decoration:none;background:var(--panel);color:var(--lime);border:0.5px solid var(--border);">
+        Dashboard Login →
+      </a>
+    </div>
+
+    <div class="feature-grid" style="margin-top:48px;text-align:left;grid-template-columns:1fr 1fr 1fr;">
+      <div class="feature-card fade-up">
+        <div class="corner-mark"></div>
+        <div class="feature-name">Instant Delivery</div>
+        <div class="feature-desc">Clips arrive as soon as they're released</div>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="corner-mark"></div>
+        <div class="feature-name">Audio & Video</div>
+        <div class="feature-desc">MP3 audio or MP4 video — your choice</div>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="corner-mark"></div>
+        <div class="feature-name">Free & Open</div>
+        <div class="feature-desc">No cost, unsubscribe anytime</div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

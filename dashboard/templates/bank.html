@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block title %}My Prophecy Bank — Share Still{% endblock %}
+{% block content %}
+<section>
+  <div class="section-header">
+    <div>
+      <div class="section-label">{{ user.email }}</div>
+      <h2 class="section-title">My Prophecy Bank</h2>
+    </div>
+    <span class="section-count">{{ prophecies|length }} saved</span>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;">
+    <button class="submit-btn" style="width:auto;padding:8px 18px;font-size:9px;" onclick="showCreateForm()">✏️ New Prophecy</button>
+    <button class="submit-btn" style="width:auto;padding:8px 18px;font-size:9px;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);" onclick="filterBank('all')">📋 All</button>
+    <button class="submit-btn" style="width:auto;padding:8px 18px;font-size:9px;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);" onclick="filterBank('favorites')">⭐ Favorites</button>
+    <button class="submit-btn" style="width:auto;padding:8px 18px;font-size:9px;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);" onclick="filterBank('text')">📝 Text</button>
+    <button class="submit-btn" style="width:auto;padding:8px 18px;font-size:9px;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);" onclick="filterBank('audio')">🎙️ Audio</button>
+    <input type="text" id="bankSearch" placeholder="Search your prophecies..." oninput="filterBank('all')" style="flex:1;min-width:200px;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--text);padding:8px 14px;font-family:var(--font-mono);font-size:10px;outline:none;">
+  </div>
+
+  <!-- Create Form -->
+  <div id="createForm" style="display:none;max-width:600px;margin:0 auto 24px;background:var(--panel2);border:0.5px solid var(--border-soft);padding:24px;">
+    <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;color:var(--lime);text-transform:uppercase;margin-bottom:16px;">New Prophecy</div>
+    <div class="field-group">
+      <label class="field-label">Title</label>
+      <input class="field-input" type="text" id="up-title" placeholder="Title of this prophecy" style="background:var(--panel);">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Content</label>
+      <textarea class="field-input" id="up-content" rows="6" placeholder="Write your prophecy..." style="background:var(--panel);resize:vertical;"></textarea>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Tags (comma separated)</label>
+      <input class="field-input" type="text" id="up-tags" placeholder="breakthrough, healing, 2026" style="background:var(--panel);">
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="submit-btn" onclick="createProphecy()">Save to Bank →</button>
+      <button class="submit-btn" style="width:auto;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);" onclick="document.getElementById('createForm').style.display='none'">Cancel</button>
+    </div>
+    <div id="up-msg" style="font-family:var(--font-mono);font-size:10px;margin-top:12px;"></div>
+  </div>
+
+  <!-- Edit Form -->
+  <div id="editForm" style="display:none;max-width:600px;margin:0 auto 24px;background:var(--panel2);border:0.5px solid var(--border-soft);padding:24px;">
+    <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;color:var(--lime);text-transform:uppercase;margin-bottom:16px;">Edit Prophecy</div>
+    <input type="hidden" id="ep-id">
+    <div class="field-group">
+      <label class="field-label">Title</label>
+      <input class="field-input" type="text" id="ep-title" style="background:var(--panel);">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Content</label>
+      <textarea class="field-input" id="ep-content" rows="6" style="background:var(--panel);resize:vertical;"></textarea>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Tags</label>
+      <input class="field-input" type="text" id="ep-tags" style="background:var(--panel);">
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="submit-btn" onclick="updateProphecy()">Save Changes →</button>
+      <button class="submit-btn" style="width:auto;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);" onclick="document.getElementById('editForm').style.display='none'">Cancel</button>
+    </div>
+    <div id="ep-msg" style="font-family:var(--font-mono);font-size:10px;margin-top:12px;"></div>
+  </div>
+
+  <!-- Prophecies List -->
+  <div id="bankList">
+    {% if prophecies %}
+      {% for p in prophecies %}
+        <div class="bank-item" data-id="{{ p.id }}" data-type="{{ p.file_type }}" data-fav="{{ p.is_favorite }}" data-tags="{{ p.tags }}" data-title="{{ p.title|lower }}">
+          <div style="display:flex;align-items:flex-start;gap:14px;">
+            <div style="flex:1;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+                {% if p.is_favorite %}<span style="color:#ffd700;">⭐</span>{% endif %}
+                <strong style="font-size:14px;">{{ p.title or 'Untitled' }}</strong>
+                {% if p.file_type == 'audio' %}<span class="badge badge-active" style="font-size:8px;">🎙️ Audio</span>{% endif %}
+                {% if p.file_type == 'video' %}<span class="badge badge-active" style="font-size:8px;">🎞️ Video</span>{% endif %}
+              </div>
+              {% if p.content_text %}
+                <div style="font-size:12px;color:var(--muted);line-height:1.7;white-space:pre-wrap;">{{ p.content_text[:300] }}{% if p.content_text|length > 300 %}...{% endif %}</div>
+              {% endif %}
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;">
+                <span>{{ p.created_at[:10] }}</span>
+                {% if p.tags %}
+                  <span>🏷️ {{ p.tags }}</span>
+                {% endif %}
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+              <button class="submit-btn" style="width:auto;padding:5px 12px;font-size:9px;" onclick="toggleFav({{ p.id }}, this)">{% if p.is_favorite %}⭐{% else %}☆{% endif %}</button>
+              <button class="submit-btn" style="width:auto;padding:5px 12px;font-size:9px;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);" onclick="showEditForm({{ p.id }})">✏️</button>
+              <button class="submit-btn" style="width:auto;padding:5px 12px;font-size:9px;background:#442;border-color:#a33;" onclick="deleteProphecy({{ p.id }})">🗑</button>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">📓</div>
+        <div class="empty-state-text">Your prophecy bank is empty.</div>
+        <div style="margin-top:12px;"><button class="submit-btn" style="width:auto;" onclick="showCreateForm()">Write your first prophecy →</button></div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<style>
+.bank-item {
+  background: var(--panel2);
+  border: 0.5px solid var(--border-soft);
+  padding: 16px 20px;
+  margin-bottom: 8px;
+  transition: background 0.2s;
+}
+.bank-item:hover {
+  background: var(--panel);
+  border-color: var(--border);
+}
+</style>
+
+<script>
+function showCreateForm() {
+  document.getElementById('createForm').style.display = 'block';
+  document.getElementById('editForm').style.display = 'none';
+  document.getElementById('up-title').focus();
+}
+
+async function createProphecy() {
+  const title = document.getElementById('up-title').value.trim();
+  const content = document.getElementById('up-content').value.trim();
+  const tags = document.getElementById('up-tags').value.trim();
+  const msg = document.getElementById('up-msg');
+  if (!title && !content) { msg.textContent = 'Add a title or content.'; msg.style.color = '#ff4444'; return; }
+  try {
+    const r = await fetch('/api/user/prophecies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, content, tags })
+    });
+    if (r.ok) {
+      msg.textContent = '✓ Saved to your bank!';
+      msg.style.color = 'var(--lime)';
+      document.getElementById('up-title').value = '';
+      document.getElementById('up-content').value = '';
+      document.getElementById('up-tags').value = '';
+      setTimeout(() => location.reload(), 800);
+    } else {
+      msg.textContent = 'Failed to save.';
+      msg.style.color = '#ff4444';
+    }
+  } catch(e) {
+    msg.textContent = 'Network error.';
+    msg.style.color = '#ff4444';
+  }
+}
+
+function showEditForm(id) {
+  const item = document.querySelector(`.bank-item[data-id="${id}"]`);
+  if (!item) return;
+  const f = document.getElementById('editForm');
+  document.getElementById('createForm').style.display = 'none';
+  f.style.display = 'block';
+  document.getElementById('ep-id').value = id;
+  fetch('/api/user/prophecies/' + id).then(r => r.json()).then(p => {
+    document.getElementById('ep-title').value = p.title || '';
+    document.getElementById('ep-content').value = p.content_text || '';
+    document.getElementById('ep-tags').value = p.tags || '';
+  });
+}
+
+async function updateProphecy() {
+  const id = document.getElementById('ep-id').value;
+  const title = document.getElementById('ep-title').value.trim();
+  const content = document.getElementById('ep-content').value.trim();
+  const tags = document.getElementById('ep-tags').value.trim();
+  const msg = document.getElementById('ep-msg');
+  try {
+    const r = await fetch('/api/user/prophecies/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, content, tags })
+    });
+    if (r.ok) {
+      msg.textContent = '✓ Updated!';
+      msg.style.color = 'var(--lime)';
+      setTimeout(() => location.reload(), 600);
+    } else {
+      msg.textContent = 'Failed to update.';
+      msg.style.color = '#ff4444';
+    }
+  } catch(e) {
+    msg.textContent = 'Network error.';
+    msg.style.color = '#ff4444';
+  }
+}
+
+async function deleteProphecy(id) {
+  if (!confirm('Delete this prophecy?')) return;
+  try {
+    const r = await fetch('/api/user/prophecies/' + id, { method: 'DELETE' });
+    if (r.ok) { location.reload(); }
+    else { alert('Failed to delete.'); }
+  } catch(e) { alert('Network error.'); }
+}
+
+async function toggleFav(id, btn) {
+  try {
+    const r = await fetch('/api/user/prophecies/' + id + '/favorite', { method: 'POST' });
+    if (r.ok) { location.reload(); }
+  } catch(e) {}
+}
+
+function filterBank(filter) {
+  const q = document.getElementById('bankSearch').value.toLowerCase();
+  document.querySelectorAll('.bank-item').forEach(item => {
+    const type = item.dataset.type;
+    const fav = item.dataset.fav;
+    const title = item.dataset.title || '';
+    const tags = (item.dataset.tags || '').toLowerCase();
+    const matchesSearch = !q || title.includes(q) || tags.includes(q);
+    let matchesFilter = true;
+    if (filter === 'favorites') matchesFilter = fav === '1';
+    else if (filter === 'text') matchesFilter = type === 'text';
+    else if (filter === 'audio') matchesFilter = type === 'audio';
+    item.style.display = matchesSearch && matchesFilter ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

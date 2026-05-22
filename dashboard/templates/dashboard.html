@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Share Still{% endblock %}
+{% block content %}
+<section>
+  <div class="section-header">
+    <div>
+      <div class="section-label">Welcome</div>
+      <h2 class="section-title">Your Prophecies</h2>
+    </div>
+    <span class="section-count">{{ clips|length }} available</span>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('prophecies', this)">📜 Written</button>
+    <button class="tab-btn" onclick="switchTab('audio', this)">🎙️ Audio</button>
+    <button class="tab-btn" onclick="switchTab('reels', this)">🎞️ Reels</button>
+    <button class="tab-btn" onclick="switchTab('settings', this)">⚙️ Settings</button>
+  </div>
+
+  <!-- Prophecies Tab -->
+  <div id="tab-prophecies" class="tab-content active">
+    {% if clips %}
+      {% for clip in clips %}
+        <div class="text-card fade-up">
+          <div class="corner-mark"></div>
+          {% if clip.content_text %}
+            <div class="text-card-title">{{ clip.title }}</div>
+            <div class="text-card-body">{{ clip.content_text }}</div>
+            <div class="text-card-date">{{ clip.created_at[:10] }}</div>
+          {% elif clip.audio_file_id or clip.audio_url %}
+            <div class="text-card-title">🎙️ {{ clip.title }}</div>
+            <div class="text-card-body">Audio prophecy — play in the Audio tab.</div>
+            <div class="text-card-date">{{ clip.created_at[:10] }}</div>
+          {% elif clip.video_file_id or clip.video_url %}
+            <div class="text-card-title">🎞️ {{ clip.title }}</div>
+            <div class="text-card-body">Video prophecy — watch in the Reels tab.</div>
+            <div class="text-card-date">{{ clip.created_at[:10] }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">📜</div>
+        <div class="empty-state-text">No prophecies available yet</div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Audio Tab -->
+  <div id="tab-audio" class="tab-content">
+    {% set audio_clips = clips|selectattr('audio_file_id', 'ne', None)|list %}
+    {% if audio_clips %}
+      <div class="audio-list">
+        {% for clip in audio_clips %}
+          <div class="audio-row" onclick="playAudio('{{ clip.title|e }}', '{{ clip.audio_file_id }}')">
+            <div class="track-num">{{ "%02d" % loop.index }}</div>
+            <button class="play-btn">▶</button>
+            <div class="track-info">
+              <div class="track-name">{{ clip.title }}</div>
+              <div class="track-meta">Audio Prophecy</div>
+            </div>
+            <span class="track-duration">—</span>
+            <div class="track-actions">
+              {% if clip.audio_url %}
+                <a href="{{ clip.audio_url }}" target="_blank" class="track-dl" style="opacity:1;color:var(--lime);font-size:14px;text-decoration:none;">⬇</a>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">🎙️</div>
+        <div class="empty-state-text">No audio prophecies available</div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Reels Tab -->
+  <div id="tab-reels" class="tab-content">
+    {% set video_clips = clips|selectattr('video_file_id', 'ne', None)|list %}
+    {% if video_clips %}
+      <div class="reels-scroll-wrap">
+        <div class="reels-row">
+          {% for clip in video_clips %}
+            <div class="reel-card">
+              <div class="reel-stripe"></div>
+              <div class="reel-thumb" style="background:#0a1a0f;">
+                <div class="reel-thumb-bg">🎬</div>
+                <div class="reel-play">
+                  <svg viewBox="0 0 12 14"><polygon points="0,0 12,7 0,14"/></svg>
+                </div>
+                <span class="reel-duration">—</span>
+              </div>
+              <div class="reel-info">
+                <div class="reel-title">{{ clip.title }}</div>
+                <div class="reel-tag">Video Prophecy</div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">🎞️</div>
+        <div class="empty-state-text">No video reels available</div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Settings Tab -->
+  <div id="tab-settings" class="tab-content">
+    <div class="signup-form-wrap" style="max-width:600px;margin:0;">
+      <div class="form-title">Delivery Preferences</div>
+      <div class="form-sub">Manage when and how you receive prophecies</div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash-msg {{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('save_settings') }}">
+        <div class="field-group">
+          <label class="field-label" for="delivery_time">Preferred Time</label>
+          <input class="field-input" type="time" id="delivery_time" name="delivery_time" value="{{ user.delivery_time or '08:00' }}">
+          <div class="field-hint">Your local time for daily/weekly delivery</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="delivery_frequency">Frequency</label>
+          <select class="field-select" id="delivery_frequency" name="delivery_frequency">
+            <option value="daily" {% if user.delivery_frequency == 'daily' %}selected{% endif %}>Daily</option>
+            <option value="weekly" {% if user.delivery_frequency == 'weekly' %}selected{% endif %}>Weekly</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="timezone">Timezone</label>
+          <select class="field-select" id="timezone" name="timezone">
+            <option value="Africa/Lagos" {% if user.timezone == 'Africa/Lagos' %}selected{% endif %}>Africa/Lagos (WAT)</option>
+            <option value="America/New_York" {% if user.timezone == 'America/New_York' %}selected{% endif %}>America/New York (EST)</option>
+            <option value="Europe/London" {% if user.timezone == 'Europe/London' %}selected{% endif %}>Europe/London (GMT)</option>
+            <option value="Africa/Accra" {% if user.timezone == 'Africa/Accra' %}selected{% endif %}>Africa/Accra (GMT)</option>
+          </select>
+        </div>
+        <button type="submit" class="submit-btn">Save Preferences</button>
+      </form>
+
+      {% if logs %}
+        <div style="margin-top:36px;">
+          <div class="section-label">Recent Deliveries</div>
+          <div class="delivery-log" style="margin-top:12px;">
+            {% for log in logs %}
+              <div class="log-item">
+                <span class="log-title">{{ log.title }}</span>
+                <span class="log-meta">{{ log.delivered_at[:16] }} · {{ log.method }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</section>
+
+<div class="player-bar" id="playerBar">
+  <div class="player-track-info">
+    <div class="player-track-name" id="playerName">—</div>
+    <div class="player-track-sub" id="playerSub">Share Still Audio</div>
+  </div>
+  <div class="player-controls">
+    <button class="ctrl-btn primary" id="playPauseBtn" onclick="togglePlay()">▶</button>
+  </div>
+  <div class="player-progress">
+    <span class="progress-time" id="progressTime">0:00</span>
+    <div class="progress-bar" onclick="seekTrack(event, this)">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <span class="progress-time" id="durationTime">0:00</span>
+  </div>
+</div>
+
+<script>
+let currentAudio = null;
+let isPlaying = false;
+let progressInterval = null;
+let currentElapsed = 0;
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function playAudio(title, fileId) {
+  document.querySelectorAll('.audio-row').forEach(r => r.classList.remove('playing'));
+  const row = event?.target?.closest?.('.audio-row');
+  if (row) row.classList.add('playing');
+
+  document.getElementById('playerName').textContent = title;
+  document.getElementById('playerSub').textContent = 'Audio Prophecy';
+  document.getElementById('playerBar').classList.add('visible');
+  document.getElementById('playPauseBtn').innerHTML = '⏸';
+  isPlaying = true;
+  currentElapsed = 0;
+  simulateProgress();
+}
+
+function simulateProgress() {
+  clearInterval(progressInterval);
+  const totalSec = 1800;
+  progressInterval = setInterval(() => {
+    if (!isPlaying) return;
+    currentElapsed++;
+    const pct = (currentElapsed / totalSec) * 100;
+    document.getElementById('progressFill').style.width = Math.min(pct, 100) + '%';
+    const m = Math.floor(currentElapsed / 60), s = currentElapsed % 60;
+    document.getElementById('progressTime').textContent = m + ':' + (s < 10 ? '0' : '') + s;
+  }, 1000);
+}
+
+function togglePlay() {
+  isPlaying = !isPlaying;
+  document.getElementById('playPauseBtn').innerHTML = isPlaying ? '⏸' : '▶';
+  if (isPlaying) simulateProgress();
+  else clearInterval(progressInterval);
+}
+
+function seekTrack(e, bar) {
+  const rect = bar.getBoundingClientRect();
+  const pct = (e.clientX - rect.left) / rect.width;
+  document.getElementById('progressFill').style.width = (pct * 100) + '%';
+}
+</script>
+{% endblock %}
