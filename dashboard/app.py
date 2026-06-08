@@ -4,6 +4,7 @@ import sqlite3
 import asyncio
 import urllib.request
 import urllib.parse
+import html
 import json as pyjson
 import xml.etree.ElementTree as ET
 from functools import wraps
@@ -23,7 +24,8 @@ from models import (
     create_testimony, get_testimonies, get_testimony,
     approve_testimony, reject_testimony, delete_testimony,
     create_user_prophecy, get_user_prophecies, get_user_prophecy,
-    update_user_prophecy, delete_user_prophecy, toggle_user_prophecy_favorite
+    update_user_prophecy, delete_user_prophecy, toggle_user_prophecy_favorite,
+    get_user_testimonies, update_user_testimony, user_delete_testimony, reinstate_testimony
 )
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -32,6 +34,7 @@ DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "bot.db")
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", os.urandom(24).hex())
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 init_prophecy_tables()
 
@@ -98,14 +101,20 @@ def login():
             existing = get_user_by_email(email)
             if existing:
                 flash("Email already registered", "error")
-                return render_template("login.html")
+                return redirect(url_for("login"))
             if len(password) < 6:
                 flash("Password must be at least 6 characters", "error")
-                return render_template("login.html")
+                return redirect(url_for("login"))
+            country_code = request.form.get("country_code", "").strip()
+            phone_raw = request.form.get("phone", "").strip()
+            phone = country_code + phone_raw if phone_raw else ""
+            telegram = request.form.get("telegram", "").strip()
+            tid = int(telegram) if telegram.isdigit() else None
             pw_hash = generate_password_hash(password)
-            create_user(email, pw_hash)
-            flash("Account created! Sign in below.", "success")
-            return render_template("login.html")
+            user_id = create_user(email, pw_hash, phone=phone, telegram_id=tid)
+            session["user_id"] = user_id
+            session["email"] = email
+            return redirect(url_for("dashboard"))
 
         user = get_user_by_email(email)
         if not user or not check_password_hash(user["password_hash"], password):
@@ -133,7 +142,8 @@ def dashboard():
         return redirect(url_for("login"))
     clips = get_active_prophecy_clips()
     logs = get_delivery_log(user_id=user["id"], limit=10)
-    return render_template("dashboard.html", user=user, clips=clips, logs=logs)
+    testimonies = get_user_testimonies(user["id"], include_deleted=True)
+    return render_template("dashboard.html", user=user, clips=clips, logs=logs, testimonies=testimonies)
 
 
 @app.route("/bank")
@@ -196,6 +206,39 @@ INSTAGRAM_REELS = [
 ]
 
 
+def _decode_instagram_url(value):
+    if not value:
+        return ""
+    try:
+        value = pyjson.loads(f'"{value}"')
+    except Exception:
+        pass
+    return html.unescape(value).replace("\\/", "/")
+
+
+def _extract_instagram_thumbnail(html_text):
+    clean_patterns = [
+        r'"display_url"\s*:\s*"([^"]+)"',
+        r'"thumbnail_src"\s*:\s*"([^"]+)"',
+        r'"thumbnail_url"\s*:\s*"([^"]+)"',
+        r'"thumbnailUrl"\s*:\s*\[\s*"([^"]+)"',
+        r'"thumbnailUrl"\s*:\s*"([^"]+)"',
+    ]
+    for pattern in clean_patterns:
+        match = re.search(pattern, html_text, re.I)
+        if match:
+            return _decode_instagram_url(match.group(1)), False
+
+    match = re.search(
+        r'<meta[^>]+property="og:image"[^>]+content="([^"]+)"',
+        html_text,
+        re.I,
+    )
+    if match:
+        return _decode_instagram_url(match.group(1)), True
+    return "", False
+
+
 @app.route("/api/reels")
 def api_reels():
     results = []
@@ -205,21 +248,17 @@ def api_reels():
                 url, headers={"User-Agent": "Mozilla/5.0 (Linux; Android 10; Pixel 4)"}
             )
             with urllib.request.urlopen(req, timeout=15) as resp:
-                html = resp.read().decode("utf-8", errors="replace")
-                thumb = ""
-                m = re.search(
-                    r'<meta[^>]+property="og:image"[^>]+content="([^"]+)"', html, re.I
-                )
-                if m:
-                    thumb = m.group(1).replace("&amp;", "&")
+                html_text = resp.read().decode("utf-8", errors="replace")
+                thumb, mask_thumb = _extract_instagram_thumbnail(html_text)
                 title = ""
                 m2 = re.search(
-                    r'<meta[^>]+property="og:title"[^>]+content="([^"]+)"', html, re.I
+                    r'<meta[^>]+property="og:title"[^>]+content="([^"]+)"', html_text, re.I
                 )
                 if m2:
-                    title = m2.group(1)
+                    title = html.unescape(m2.group(1))
                 results.append({
                     "thumbnail_url": thumb,
+                    "thumbnail_masked": mask_thumb,
                     "url": url,
                     "title": title,
                     "author_name": "pastorenochmoments",
@@ -227,6 +266,7 @@ def api_reels():
         except Exception:
             results.append({
                 "thumbnail_url": "",
+                "thumbnail_masked": False,
                 "url": url,
                 "title": "",
                 "author_name": "pastorenochmoments",
@@ -516,6 +556,63 @@ def api_toggle_favorite(pid):
     if not prophecy or prophecy["user_id"] != uid:
         return jsonify({"error": "Not found"}), 404
     toggle_user_prophecy_favorite(pid)
+    return jsonify({"success": True})
+
+
+# ── User Testimony CRUD ──
+
+@app.route("/api/user/testimonies", methods=["GET", "POST"])
+@login_required
+def api_user_testimonies():
+    uid = session.get("user_id")
+    if not uid:
+        return jsonify({"error": "Unauthorized"}), 401
+    if request.method == "GET":
+        rows = get_user_testimonies(uid, include_deleted=True)
+        return jsonify([dict(r) for r in rows])
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"error": "Invalid JSON"}), 400
+    user = get_user_by_id(uid)
+    tid = create_testimony(
+        user_id=uid,
+        user_name=data.get("user_name", user["email"].split("@")[0] if user else ""),
+        title=data.get("title", ""),
+        content=data.get("content", ""),
+        category=data.get("category", ""),
+        source="web",
+    )
+    return jsonify({"id": tid}), 201
+
+
+@app.route("/api/user/testimonies/<int:tid>", methods=["GET", "PUT", "DELETE"])
+@login_required
+def api_user_testimony(tid):
+    uid = session.get("user_id")
+    if not uid:
+        return jsonify({"error": "Unauthorized"}), 401
+    t = get_testimony(tid)
+    if not t or t["user_id"] != uid:
+        return jsonify({"error": "Not found"}), 404
+    if request.method == "GET":
+        return jsonify(dict(t))
+    if request.method == "DELETE":
+        user_delete_testimony(tid, uid)
+        return jsonify({"success": True, "action": "deleted"})
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"error": "Invalid JSON"}), 400
+    update_user_testimony(tid, uid, data.get("title", ""), data.get("content", ""), data.get("category", ""))
+    return jsonify({"success": True, "action": "updated"})
+
+
+@app.route("/api/admin/testimonies/<int:tid>/reinstate", methods=["POST"])
+@login_required
+@admin_required
+def api_admin_reinstate_testimony(tid):
+    ok = reinstate_testimony(tid)
+    if not ok:
+        return jsonify({"error": "Not found"}), 404
     return jsonify({"success": True})
 
 

@@ -12,10 +12,10 @@
 
  <!-- Tabs -->
  <div class="tabs">
- <button class="tab-btn active" onclick="switchTab('prophecies', this)"> Written</button>
- <button class="tab-btn" onclick="switchTab('audio', this)"> Audio</button>
- <button class="tab-btn" onclick="switchTab('reels', this)"> Reels</button>
- <button class="tab-btn" onclick="switchTab('settings', this)"> Settings</button>
+  <button class="tab-btn active" onclick="switchTab('prophecies', this)"> Written</button>
+  <button class="tab-btn" onclick="switchTab('audio', this)"> Audio</button>
+  <button class="tab-btn" onclick="switchTab('testimonies', this)"> Testimonies</button>
+  <button class="tab-btn" onclick="switchTab('settings', this)"> Settings</button>
  </div>
 
  <!-- Prophecies Tab -->
@@ -75,36 +75,75 @@
  {% endif %}
  </div>
 
- <!-- Reels Tab -->
- <div id="tab-reels" class="tab-content">
- {% set video_clips = clips|selectattr('video_file_id', 'ne', None)|list %}
- {% if video_clips %}
- <div class="reels-scroll-wrap">
- <div class="reels-row">
- {% for clip in video_clips %}
- <div class="reel-card">
- <div class="reel-stripe"></div>
- <div class="reel-thumb" style="background:#0a1a0f;">
- <div class="reel-thumb-bg"></div>
- <div class="reel-play">
- <svg viewBox="0 0 12 14"><polygon points="0,0 12,7 0,14"/></svg>
- </div>
- <span class="reel-duration">—</span>
- </div>
- <div class="reel-info">
- <div class="reel-title">{{ clip.title }}</div>
- <div class="reel-tag">Video Prophecy</div>
- </div>
- </div>
- {% endfor %}
- </div>
- </div>
- {% else %}
- <div class="empty-state">
- <div class="empty-state-text">No video reels available</div>
- </div>
- {% endif %}
- </div>
+ <!-- Testimonies Tab -->
+  <div id="tab-testimonies" class="tab-content">
+  <div style="margin-bottom:20px;">
+  <button class="submit-btn" style="width:auto;padding:8px 18px;font-size:9px;margin-top:0;" onclick="showTForm()">Write Testimony</button>
+  </div>
+
+  <div id="tForm" style="display:none;max-width:600px;margin:0 auto 24px;background:var(--panel2);border:0.5px solid var(--border-soft);padding:24px;">
+  <input type="hidden" id="tFormId" value="">
+  <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;color:var(--lime);text-transform:uppercase;margin-bottom:16px;" id="tFormTitle">New Testimony</div>
+  <div class="field-group">
+  <label class="field-label">Title</label>
+  <input class="field-input" type="text" id="tTitle" placeholder="What God has done" style="background:var(--panel);">
+  </div>
+  <div class="field-group">
+  <label class="field-label">Category</label>
+  <select class="field-input" id="tCategory" style="background:var(--panel);">
+  <option value="">Select category...</option>
+  <option value="Messages">Messages</option>
+  <option value="Prophecies">Prophecies</option>
+  <option value="Prayers">Prayers</option>
+  <option value="Services">Services</option>
+  </select>
+  </div>
+  <div class="field-group">
+  <label class="field-label">Your Testimony</label>
+  <textarea class="field-input" id="tContent" rows="5" placeholder="Write your testimony..." style="background:var(--panel);resize:vertical;"></textarea>
+  </div>
+  <div style="display:flex;gap:10px;">
+  <button class="submit-btn" style="width:auto;padding:8px 18px;font-size:9px;margin-top:0;" onclick="saveT()">Save</button>
+  <button class="submit-btn" style="width:auto;padding:8px 18px;font-size:9px;margin-top:0;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);" onclick="cancelTForm()">Cancel</button>
+  </div>
+  <div id="tMsg" style="font-family:var(--font-mono);font-size:10px;margin-top:12px;"></div>
+  </div>
+
+  <div id="tList">
+  {% if testimonies %}
+  {% for t in testimonies %}
+  <div class="text-card fade-up" data-tid="{{ t.id }}" style="{% if t.status == 'deleted_by_user' %}opacity:0.4;{% endif %}">
+  <div class="corner-mark"></div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+  <div style="flex:1;">
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+  <div class="text-card-title" style="margin-bottom:0;{% if t.status == 'deleted_by_user' %}text-decoration:line-through;{% endif %}">{{ t.title }}</div>
+  {% if t.category %}<span class="badge" style="font-size:8px;background:var(--panel);border:0.5px solid var(--border-soft);color:var(--muted);">{{ t.category }}</span>{% endif %}
+  {% if t.status == 'approved' %}<span class="badge badge-active" style="font-size:8px;">Posted</span>
+  {% elif t.status == 'pending' %}<span class="badge badge-pending" style="font-size:8px;">Pending</span>
+  {% elif t.status == 'rejected' %}<span class="badge badge-inactive" style="font-size:8px;">Rejected</span>
+  {% elif t.status == 'deleted_by_user' %}<span class="badge badge-inactive" style="font-size:8px;background:#442;border-color:#a33;color:#a33;">Deleted</span>
+  {% endif %}
+  </div>
+  <div class="text-card-body" style="{% if t.status == 'deleted_by_user' %}text-decoration:line-through;{% endif %}">"{{ t.content[:200] }}{% if t.content|length > 200 %}...{% endif %}"</div>
+  <div class="text-card-date">{{ t.created_at[:10] }}</div>
+  </div>
+  {% if t.status != 'deleted_by_user' %}
+  <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+  <button class="submit-btn" style="width:auto;padding:5px 12px;font-size:9px;margin-top:0;" onclick="editT({{ t.id }})">Edit</button>
+  <button class="submit-btn" style="width:auto;padding:5px 12px;font-size:9px;margin-top:0;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);" onclick="deleteT({{ t.id }})">Delete</button>
+  </div>
+  {% endif %}
+  </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="empty-state">
+  <div class="empty-state-text">No testimonies yet. Share what God has done!</div>
+  </div>
+  {% endif %}
+  </div>
+  </div>
 
  <!-- Settings Tab -->
  <div id="tab-settings" class="tab-content">
@@ -169,7 +208,7 @@
  <div class="player-track-sub" id="playerSub">Share Still Audio</div>
  </div>
  <div class="player-controls">
- <button class="ctrl-btn primary" id="playPauseBtn" onclick="togglePlay()" style="font-size:9px;letter-spacing:2px;font-weight:500;">PLAY</button>
+  <button class="ctrl-btn primary" id="playPauseBtn" onclick="togglePlay()" style="font-size:0;letter-spacing:0;"><svg viewBox="0 0 16 16" width="14" height="14" fill="white"><polygon points="4,2 14,8 4,14"/></svg></button>
  </div>
  <div class="player-progress">
  <span class="progress-time" id="progressTime">0:00</span>
@@ -181,6 +220,8 @@
 </div>
 
 <script>
+const PLAY_ICON = '<svg viewBox="0 0 16 16" width="14" height="14" fill="white"><polygon points="4,2 14,8 4,14"/></svg>';
+const PAUSE_ICON = '<svg viewBox="0 0 16 16" width="14" height="14" fill="white"><rect x="3" y="2" width="4" height="12" rx="1"/><rect x="9" y="2" width="4" height="12" rx="1"/></svg>';
 let currentAudio = null;
 let isPlaying = false;
 let progressInterval = null;
@@ -201,8 +242,8 @@ function playAudio(title, fileId) {
  document.getElementById('playerName').textContent = title;
  document.getElementById('playerSub').textContent = 'Audio Prophecy';
  document.getElementById('playerBar').classList.add('visible');
- document.getElementById('playPauseBtn').innerHTML = 'PLAY';
- isPlaying = true;
+  document.getElementById('playPauseBtn').innerHTML = PAUSE_ICON;
+  isPlaying = true;
  currentElapsed = 0;
  simulateProgress();
 }
@@ -221,9 +262,9 @@ function simulateProgress() {
 }
 
 function togglePlay() {
- isPlaying = !isPlaying;
-  document.getElementById('playPauseBtn').innerHTML = isPlaying ? 'PAUSE' : 'PLAY';
- if (isPlaying) simulateProgress();
+  isPlaying = !isPlaying;
+   document.getElementById('playPauseBtn').innerHTML = isPlaying ? PAUSE_ICON : PLAY_ICON;
+  if (isPlaying) simulateProgress();
  else clearInterval(progressInterval);
 }
 
@@ -231,6 +272,75 @@ function seekTrack(e, bar) {
  const rect = bar.getBoundingClientRect();
  const pct = (e.clientX - rect.left) / rect.width;
  document.getElementById('progressFill').style.width = (pct * 100) + '%';
+}
+
+function showTForm() {
+ document.getElementById('tForm').style.display = 'block';
+ document.getElementById('tFormId').value = '';
+ document.getElementById('tFormTitle').textContent = 'New Testimony';
+ document.getElementById('tTitle').value = '';
+ document.getElementById('tContent').value = '';
+ document.getElementById('tMsg').textContent = '';
+ document.getElementById('tTitle').focus();
+}
+
+function cancelTForm() {
+ document.getElementById('tForm').style.display = 'none';
+ document.getElementById('tMsg').textContent = '';
+}
+
+function editT(id) {
+ fetch('/api/user/testimonies/' + id).then(r => r.json()).then(t => {
+ document.getElementById('tForm').style.display = 'block';
+ document.getElementById('tFormId').value = t.id;
+ document.getElementById('tFormTitle').textContent = 'Edit Testimony';
+ document.getElementById('tTitle').value = t.title || '';
+ document.getElementById('tCategory').value = t.category || '';
+ document.getElementById('tContent').value = t.content || '';
+ document.getElementById('tMsg').textContent = '';
+ document.getElementById('tTitle').focus();
+ });
+}
+
+async function saveT() {
+ const id = document.getElementById('tFormId').value;
+ const title = document.getElementById('tTitle').value.trim();
+ const content = document.getElementById('tContent').value.trim();
+ const category = document.getElementById('tCategory').value;
+ const msg = document.getElementById('tMsg');
+ if (!title || !content) { msg.textContent = 'Title and testimony required.'; msg.style.color = '#ff4444'; return; }
+ const url = id ? '/api/user/testimonies/' + id : '/api/user/testimonies';
+ const method = id ? 'PUT' : 'POST';
+ try {
+ const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, content, category }) });
+ const d = await r.json();
+ if (r.ok) {
+ msg.textContent = id ? 'Updated! Resubmitted for review.' : 'Submitted for review!';
+ msg.style.color = 'var(--lime)';
+ setTimeout(() => location.reload(), 800);
+ } else {
+ msg.textContent = 'Failed.';
+ msg.style.color = '#ff4444';
+ }
+ } catch(e) { msg.textContent = 'Network error.'; msg.style.color = '#ff4444'; }
+}
+
+async function deleteT(id) {
+ if (!confirm('Delete this testimony? It will be removed from public and archived.')) return;
+ try {
+ const r = await fetch('/api/user/testimonies/' + id, { method: 'DELETE' });
+ if (r.ok) { location.reload(); }
+ else { alert('Failed.'); }
+ } catch(e) { alert('Network error.'); }
+}
+
+async function reinstateT(id) {
+ if (!confirm('Reinstate this testimony for re-review?')) return;
+ try {
+ const r = await fetch('/api/admin/testimonies/' + id + '/reinstate', { method: 'POST' });
+ if (r.ok) { location.reload(); }
+ else { alert('Failed.'); }
+ } catch(e) { alert('Network error.'); }
 }
 </script>
 {% endblock %}

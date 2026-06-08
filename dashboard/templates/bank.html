@@ -10,13 +10,13 @@
  <span class="section-count">{{ prophecies|length }} saved</span>
  </div>
 
- <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;">
- <button class="submit-btn" style="width:auto;padding:8px 18px;font-size:9px;" onclick="showCreateForm()"> New Prophecy</button>
- <button class="submit-btn" style="width:auto;padding:8px 18px;font-size:9px;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);" onclick="filterBank('all')"> All</button>
- <button class="submit-btn" style="width:auto;padding:8px 18px;font-size:9px;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);" onclick="filterBank('favorites')"> Favorites</button>
- <button class="submit-btn" style="width:auto;padding:8px 18px;font-size:9px;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);" onclick="filterBank('text')"> Text</button>
- <button class="submit-btn" style="width:auto;padding:8px 18px;font-size:9px;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);" onclick="filterBank('audio')"> Audio</button>
- <input type="text" id="bankSearch" placeholder="Search your prophecies..." oninput="filterBank('all')" style="flex:1;min-width:200px;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--text);padding:8px 14px;font-family:var(--font-mono);font-size:10px;outline:none;">
+ <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;align-items:center;">
+ <button class="submit-btn" style="width:auto;padding:8px 16px;font-size:10px;margin-top:0;line-height:1;border:0.5px solid var(--lime);" onclick="showCreateForm()"> New Prophecy</button>
+ <button class="submit-btn" style="width:auto;padding:8px 16px;font-size:10px;margin-top:0;line-height:1;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);" onclick="filterBank('all')"> All</button>
+ <button class="submit-btn" style="width:auto;padding:8px 16px;font-size:10px;margin-top:0;line-height:1;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);" onclick="filterBank('favorites')"> Favorites</button>
+ <button class="submit-btn" style="width:auto;padding:8px 16px;font-size:10px;margin-top:0;line-height:1;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);" onclick="filterBank('text')"> Text</button>
+ <button class="submit-btn" style="width:auto;padding:8px 16px;font-size:10px;margin-top:0;line-height:1;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--muted);" onclick="filterBank('audio')"> Audio</button>
+ <input type="text" id="bankSearch" placeholder="Search your prophecies..." oninput="filterBank('all')" style="flex:1;min-width:200px;background:var(--panel2);border:0.5px solid var(--border-soft);color:var(--text);padding:8px 14px;font-family:var(--font-mono);font-size:10px;outline:none;line-height:1;height:auto;">
  </div>
 
  <!-- Create Form -->

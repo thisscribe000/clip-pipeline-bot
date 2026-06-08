@@ -18,6 +18,7 @@ def init_prophecy_tables():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
+            phone TEXT DEFAULT '',
             telegram_id INTEGER,
             delivery_time TEXT DEFAULT '08:00',
             delivery_frequency TEXT DEFAULT 'daily',
@@ -84,19 +85,38 @@ def init_prophecy_tables():
             content TEXT NOT NULL,
             media_file_id TEXT DEFAULT '',
             media_type TEXT DEFAULT '',
+            category TEXT DEFAULT '',
             status TEXT DEFAULT 'pending',
             is_public INTEGER DEFAULT 0,
             source TEXT DEFAULT 'web',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             approved_at TIMESTAMP,
             approved_by INTEGER,
+            deleted_at TIMESTAMP,
+            deleted_by_user INTEGER DEFAULT 0,
             FOREIGN KEY (user_id) REFERENCES users(id)
         )
     """)
+    existing_users = [row[1] for row in conn.execute("PRAGMA table_info(users)").fetchall()]
+    if "phone" not in existing_users:
+        conn.execute("ALTER TABLE users ADD COLUMN phone TEXT DEFAULT ''")
+    migrate_testimonies()
     conn.commit()
     conn.close()
     migrate_prophecy_clips()
 
+
+def migrate_testimonies():
+    conn = get_db()
+    existing = [row[1] for row in conn.execute("PRAGMA table_info(testimonies)").fetchall()]
+    if "deleted_at" not in existing:
+        conn.execute("ALTER TABLE testimonies ADD COLUMN deleted_at TIMESTAMP")
+    if "deleted_by_user" not in existing:
+        conn.execute("ALTER TABLE testimonies ADD COLUMN deleted_by_user INTEGER DEFAULT 0")
+    if "category" not in existing:
+        conn.execute("ALTER TABLE testimonies ADD COLUMN category TEXT DEFAULT ''")
+    conn.commit()
+    conn.close()
 
 def migrate_prophecy_clips():
     conn = get_db()
@@ -133,12 +153,12 @@ def get_user_by_id(user_id):
     return user
 
 
-def create_user(email, password_hash, telegram_id=None):
+def create_user(email, password_hash, phone='', telegram_id=None):
     conn = get_db()
     c = conn.cursor()
     c.execute(
-        "INSERT INTO users (email, password_hash, telegram_id) VALUES (?, ?, ?)",
-        (email, password_hash, telegram_id)
+        "INSERT INTO users (email, password_hash, phone, telegram_id) VALUES (?, ?, ?, ?)",
+        (email, password_hash, phone, telegram_id)
     )
     conn.commit()
     user_id = c.lastrowid
@@ -399,13 +419,13 @@ def toggle_user_prophecy_favorite(prophecy_id):
     conn.close()
 
 
-def create_testimony(user_id=None, user_name='', title='', content='', media_file_id='', media_type='', source='web'):
+def create_testimony(user_id=None, user_name='', title='', content='', media_file_id='', media_type='', source='web', category=''):
     conn = get_db()
     c = conn.cursor()
     c.execute(
-        """INSERT INTO testimonies (user_id, user_name, title, content, media_file_id, media_type, source)
-           VALUES (?, ?, ?, ?, ?, ?, ?)""",
-        (user_id, user_name, title, content, media_file_id, media_type, source)
+        """INSERT INTO testimonies (user_id, user_name, title, content, media_file_id, media_type, source, category)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        (user_id, user_name, title, content, media_file_id, media_type, source, category)
     )
     conn.commit()
     tid = c.lastrowid
@@ -462,3 +482,50 @@ def delete_testimony(testimony_id):
     conn.execute("DELETE FROM testimonies WHERE id = ?", (testimony_id,))
     conn.commit()
     conn.close()
+
+
+def get_user_testimonies(user_id, include_deleted=False):
+    conn = get_db()
+    sql = "SELECT * FROM testimonies WHERE user_id = ?"
+    params = [user_id]
+    if not include_deleted:
+        sql += " AND (deleted_at IS NULL OR status != 'deleted_by_user')"
+    sql += " ORDER BY created_at DESC"
+    rows = conn.execute(sql, params).fetchall()
+    conn.close()
+    return rows
+
+
+def update_user_testimony(tid, user_id, title, content, category=''):
+    conn = get_db()
+    conn.execute(
+        "UPDATE testimonies SET title=?, content=?, category=?, status='pending', is_public=0, approved_at=NULL, approved_by=NULL WHERE id=? AND user_id=?",
+        (title, content, category, tid, user_id)
+    )
+    conn.commit()
+    conn.close()
+
+
+def user_delete_testimony(tid, user_id):
+    conn = get_db()
+    conn.execute(
+        "UPDATE testimonies SET status='deleted_by_user', is_public=0, deleted_at=CURRENT_TIMESTAMP, deleted_by_user=1 WHERE id=? AND user_id=?",
+        (tid, user_id)
+    )
+    conn.commit()
+    conn.close()
+
+
+def reinstate_testimony(tid):
+    conn = get_db()
+    t = conn.execute("SELECT * FROM testimonies WHERE id=?", (tid,)).fetchone()
+    if not t:
+        conn.close()
+        return False
+    conn.execute(
+        "UPDATE testimonies SET status='pending', is_public=0, deleted_at=NULL, deleted_by_user=0 WHERE id=?",
+        (tid,)
+    )
+    conn.commit()
+    conn.close()
+    return True
